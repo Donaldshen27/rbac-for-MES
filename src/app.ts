@@ -1,77 +1,96 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
-import path from 'path';
+import { appConfig } from '@config/index';
+import { logger, morganStream } from '@utils/logger';
+import {
+  errorHandler,
+  notFoundHandler,
+  handleUncaughtErrors,
+  gracefulShutdown,
+  requestId,
+  requestLogger,
+  security,
+  generalLimiter,
+  validateContentType,
+} from '@middlewares/index';
+import { ResponseUtil } from '@utils/response';
+import morgan from 'morgan';
 
 // Load environment variables
 dotenv.config();
 
+// Handle uncaught errors
+handleUncaughtErrors();
+
 // Create Express app
 const app: Application = express();
 
-// Middleware
-app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || '*',
-  credentials: true,
-}));
+// Basic middleware
+app.use(requestId);
+app.use(requestLogger);
+
+// Security middleware
+app.use(security);
+
+// Rate limiting
+app.use(generalLimiter);
+
+// CORS
+app.use(cors(appConfig.corsOptions));
+
+// Body parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(validateContentType);
+
+// Compression
 app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('combined'));
 
-// API Routes will be added here
-app.get('/api/v1/health', (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    data: {
-      status: 'healthy',
-      version: process.env.APP_VERSION || '1.0.0',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
+// HTTP request logging
+app.use(morgan('combined', { stream: morganStream }));
+
+// Health check endpoint
+app.get(`${appConfig.apiPrefix}/health`, (req: Request, res: Response) => {
+  ResponseUtil.success(res, {
+    status: 'healthy',
+    version: appConfig.appVersion,
+    timestamp: new Date().toISOString(),
+    environment: appConfig.env,
+    services: {
+      database: 'checking', // Will be implemented with actual DB check
     },
   });
 });
 
-// 404 handler
-app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      code: 'NOT_FOUND',
-      message: 'The requested resource was not found',
-      path: req.path,
-    },
-  });
-});
+// API Routes will be mounted here
+// app.use(`${appConfig.apiPrefix}/auth`, authRoutes);
+// app.use(`${appConfig.apiPrefix}/users`, userRoutes);
+// app.use(`${appConfig.apiPrefix}/roles`, roleRoutes);
+// app.use(`${appConfig.apiPrefix}/permissions`, permissionRoutes);
+// app.use(`${appConfig.apiPrefix}/menus`, menuRoutes);
 
-// Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    error: {
-      code: 'INTERNAL_SERVER_ERROR',
-      message: process.env.NODE_ENV === 'production' 
-        ? 'An internal server error occurred' 
-        : err.message,
-    },
-  });
-});
+// 404 handler - must be after all routes
+app.use(notFoundHandler);
+
+// Global error handler - must be last
+app.use(errorHandler);
 
 // Start server
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
-
 if (require.main === module) {
-  app.listen(Number(PORT), HOST, () => {
-    console.log(`🚀 RBAC System server is running on http://${HOST}:${PORT}`);
-    console.log(`📚 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`📋 API Docs: http://${HOST}:${PORT}/api-docs`);
+  const server = app.listen(appConfig.port, appConfig.host, () => {
+    logger.info(`🚀 ${appConfig.appName} server is running`);
+    logger.info(`📍 URL: http://${appConfig.host}:${appConfig.port}`);
+    logger.info(`📚 Environment: ${appConfig.env}`);
+    logger.info(`🔧 API Prefix: ${appConfig.apiPrefix}`);
+    if (appConfig.swaggerEnabled) {
+      logger.info(`📋 API Docs: http://${appConfig.host}:${appConfig.port}${appConfig.swaggerPath}`);
+    }
   });
+
+  // Handle graceful shutdown
+  gracefulShutdown(server);
 }
 
 export default app;

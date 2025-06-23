@@ -1,5 +1,6 @@
 // Export all model types
 export * from './models';
+export * from './auth.types';
 
 // Common API types
 export interface ApiResponse<T = any> {
@@ -18,48 +19,6 @@ export interface ApiError {
   }>;
   timestamp?: string;
   path?: string;
-}
-
-// Authentication types
-export interface LoginRequest {
-  username: string; // Can be username or email
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
-export interface JwtPayload {
-  sub: string; // user id
-  username: string;
-  email: string;
-  roles: string[];
-  permissions: string[];
-  isSuperuser: boolean;
-  iat?: number;
-  exp?: number;
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-// Request context types
-export interface AuthenticatedRequest extends Express.Request {
-  user?: JwtPayload;
-  userId?: string;
 }
 
 // Common query parameters
