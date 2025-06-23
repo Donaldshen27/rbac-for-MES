@@ -11,7 +11,6 @@ export interface RegisterData {
   username?: string;
   firstName?: string;
   lastName?: string;
-  phone?: string;
   roleIds?: number[];
   ipAddress?: string;
   userAgent?: string;
@@ -66,9 +65,9 @@ export interface AuthResponse {
       name: string;
       description?: string;
     }>;
-    emailVerified: boolean;
-    status: string;
-    lastLoginAt?: Date;
+    isActive: boolean;
+    isSuperuser: boolean;
+    lastLogin?: Date;
   };
   tokens: TokenPair;
 }
