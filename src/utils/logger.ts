@@ -37,6 +37,20 @@ const format = winston.format.combine(
   winston.format.json(),
 );
 
+// Safe stringify function to handle circular references
+const safeStringify = (obj: any): string => {
+  const seen = new WeakSet();
+  return JSON.stringify(obj, (_key, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '[Circular Reference]';
+      }
+      seen.add(value);
+    }
+    return value;
+  });
+};
+
 // Define console format for development
 const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
@@ -44,7 +58,7 @@ const consoleFormat = winston.format.combine(
   winston.format.printf(({ timestamp, level, message, ...metadata }) => {
     let msg = `${timestamp} [${level}]: ${message}`;
     if (Object.keys(metadata).length > 0) {
-      msg += ` ${JSON.stringify(metadata)}`;
+      msg += ` ${safeStringify(metadata)}`;
     }
     return msg;
   }),

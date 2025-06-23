@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 import dbConfig from './database.config';
-import { logger } from '@utils/logger';
+import { logger } from '../utils/logger';
 
 class Database {
   private static instance: Database;
@@ -14,21 +14,8 @@ class Database {
   private setupHooks(): void {
     // Log all SQL queries in development
     if (process.env.NODE_ENV === 'development') {
-      this.sequelize.beforeConnect(() => {
-        logger.debug('Attempting to connect to database...');
-      });
-
-      this.sequelize.afterConnect(() => {
-        logger.info('Database connection established successfully');
-      });
-
-      this.sequelize.beforeDisconnect(() => {
-        logger.debug('Disconnecting from database...');
-      });
-
-      this.sequelize.afterDisconnect(() => {
-        logger.info('Database connection closed');
-      });
+      // These hooks are not available on Sequelize instances
+      // We'll handle logging in the connect/disconnect methods instead
     }
   }
 

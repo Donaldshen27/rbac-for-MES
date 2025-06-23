@@ -1,4 +1,4 @@
-import { Sequelize, Options } from 'sequelize';
+import { Options } from 'sequelize';
 import dotenv from 'dotenv';
 
 dotenv.config();

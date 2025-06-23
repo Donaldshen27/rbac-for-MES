@@ -17,6 +17,7 @@ import {
 } from '@middlewares/index';
 import { ResponseUtil } from '@utils/response';
 import morgan from 'morgan';
+import routes from './routes';
 
 // Load environment variables
 dotenv.config();
@@ -52,7 +53,7 @@ app.use(compression());
 app.use(morgan('combined', { stream: morganStream }));
 
 // Health check endpoint
-app.get(`${appConfig.apiPrefix}/health`, (req: Request, res: Response) => {
+app.get(`${appConfig.apiPrefix}/health`, (_req: Request, res: Response) => {
   ResponseUtil.success(res, {
     status: 'healthy',
     version: appConfig.appVersion,
@@ -64,12 +65,8 @@ app.get(`${appConfig.apiPrefix}/health`, (req: Request, res: Response) => {
   });
 });
 
-// API Routes will be mounted here
-// app.use(`${appConfig.apiPrefix}/auth`, authRoutes);
-// app.use(`${appConfig.apiPrefix}/users`, userRoutes);
-// app.use(`${appConfig.apiPrefix}/roles`, roleRoutes);
-// app.use(`${appConfig.apiPrefix}/permissions`, permissionRoutes);
-// app.use(`${appConfig.apiPrefix}/menus`, menuRoutes);
+// API Routes
+app.use(appConfig.apiPrefix, routes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);

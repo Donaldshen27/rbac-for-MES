@@ -156,3 +156,26 @@ export const {
   tooManyRequests,
   internalError,
 } = ResponseUtil;
+
+// Static ApiResponse helper for controllers
+export class ApiResponse {
+  static success<T>(data: T, message?: string): ApiResponse<T> {
+    return {
+      success: true,
+      data,
+      message,
+    };
+  }
+
+  static error(code: string, message: string, details?: any): ApiResponse {
+    return {
+      success: false,
+      error: {
+        code,
+        message,
+        details,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+}

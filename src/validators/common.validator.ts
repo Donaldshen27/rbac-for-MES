@@ -157,3 +157,8 @@ export const batchOperationResultSchema = Joi.object({
     )
     .optional(),
 });
+
+/**
+ * Generic ID validation
+ */
+export const validateId = idParamSchema;

@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import { CorsOptions } from 'cors';
-import { RateLimitRequestHandler } from 'express-rate-limit';
 
 // Load environment variables
 dotenv.config();

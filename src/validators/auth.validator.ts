@@ -148,3 +148,36 @@ export const logoutSchema = Joi.object({
       'string.base': 'Invalid refresh token format',
     }),
 });
+
+/**
+ * Update profile validation schema
+ */
+export const updateProfileSchema = Joi.object({
+  username: commonPatterns.username
+    .optional()
+    .messages({
+      'string.alphanum': 'Username can only contain letters and numbers',
+      'string.min': 'Username must be at least 3 characters long',
+      'string.max': 'Username cannot exceed 30 characters',
+    }),
+  firstName: Joi.string()
+    .trim()
+    .min(1)
+    .max(50)
+    .pattern(/^[a-zA-Z\s'-]+$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'First name can only contain letters, spaces, hyphens, and apostrophes',
+    }),
+  lastName: Joi.string()
+    .trim()
+    .min(1)
+    .max(50)
+    .pattern(/^[a-zA-Z\s'-]+$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Last name can only contain letters, spaces, hyphens, and apostrophes',
+    }),
+}).min(1).messages({
+  'object.min': 'At least one field must be provided to update',
+});

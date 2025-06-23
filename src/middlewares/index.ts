@@ -61,3 +61,15 @@ export {
   extendedJoi,
   sanitizeHtml
 } from './validation.middleware';
+
+// Permission checking
+export {
+  requirePermission,
+  requireRole,
+  requireOwnershipOrPermission,
+  requireSuperuser,
+  requireDynamicPermission,
+  requireResourcePermission,
+  requireAny,
+  auditPermissionCheck
+} from './permission.middleware';

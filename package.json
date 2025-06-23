@@ -50,6 +50,7 @@
   },
   "homepage": "https://github.com/Donaldshen27/rbac-for-MES#readme",
   "dependencies": {
+    "@types/swagger-jsdoc": "^6.0.4",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
@@ -62,6 +63,7 @@
     "morgan": "^1.10.0",
     "mysql2": "^3.14.1",
     "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "umzug": "^3.8.2",
     "uuid": "^11.1.0",
