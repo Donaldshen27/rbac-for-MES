@@ -18,6 +18,7 @@ import {
 import { ResponseUtil } from '@utils/response';
 import morgan from 'morgan';
 import routes from './routes';
+import { setupSwagger } from './middlewares/swagger.middleware';
 
 // Load environment variables
 dotenv.config();
@@ -67,6 +68,9 @@ app.get(`${appConfig.apiPrefix}/health`, (_req: Request, res: Response) => {
 
 // API Routes
 app.use(appConfig.apiPrefix, routes);
+
+// Swagger documentation - must be before 404 handler
+setupSwagger(app);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);

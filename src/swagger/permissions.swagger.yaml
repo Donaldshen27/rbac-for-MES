@@ -1,0 +1,522 @@
+paths:
+  /permissions:
+    get:
+      tags:
+        - Permissions
+      summary: List permissions
+      description: Get a paginated list of permissions with optional filters
+      operationId: getPermissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/searchParam'
+        - name: resource
+          in: query
+          description: Filter by resource
+          schema:
+            type: string
+            example: user
+        - name: action
+          in: query
+          description: Filter by action
+          schema:
+            type: string
+            example: create
+      responses:
+        '200':
+          description: Permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Permissions retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      permissions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Permission'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    post:
+      tags:
+        - Permissions
+      summary: Create permission
+      description: Create a new permission
+      operationId: createPermission
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - resource
+                - action
+              properties:
+                name:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$'
+                  example: user:create
+                  description: Permission name (auto-generated from resource:action if not provided)
+                resource:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+$'
+                  example: user
+                action:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+$'
+                  example: create
+                description:
+                  type: string
+                  maxLength: 500
+                  example: Create new users
+      responses:
+        '201':
+          description: Permission created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Permission created successfully
+                  data:
+                    type: object
+                    properties:
+                      permission:
+                        $ref: '#/components/schemas/Permission'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /permissions/check:
+    get:
+      tags:
+        - Permissions
+      summary: Check user permission
+      description: Check if the current user has a specific permission
+      operationId: checkPermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: permission
+          in: query
+          required: true
+          description: Permission to check
+          schema:
+            type: string
+            example: user:create
+      responses:
+        '200':
+          description: Permission check completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Permission check completed
+                  data:
+                    type: object
+                    properties:
+                      hasPermission:
+                        type: boolean
+                        example: true
+                      source:
+                        type: string
+                        example: role:admin
+                        description: Source of the permission (role name or 'superuser')
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /permissions/{id}:
+    get:
+      tags:
+        - Permissions
+      summary: Get permission by ID
+      description: Get detailed information about a specific permission
+      operationId: getPermissionById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idParam'
+      responses:
+        '200':
+          description: Permission retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Permission retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      permission:
+                        allOf:
+                          - $ref: '#/components/schemas/Permission'
+                          - type: object
+                            properties:
+                              roles:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    id:
+                                      type: string
+                                      format: uuid
+                                    name:
+                                      type: string
+                                    userCount:
+                                      type: integer
+                                      example: 25
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Permissions
+      summary: Update permission
+      description: Update permission description
+      operationId: updatePermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  maxLength: 500
+                  example: Updated description for creating users
+      responses:
+        '200':
+          description: Permission updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Permission updated successfully
+                  data:
+                    type: object
+                    properties:
+                      permission:
+                        $ref: '#/components/schemas/Permission'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      tags:
+        - Permissions
+      summary: Delete permission
+      description: Delete a permission
+      operationId: deletePermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idParam'
+      responses:
+        '200':
+          description: Permission deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Permission deleted successfully
+        '400':
+          description: Cannot delete permission assigned to roles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /resources:
+    get:
+      tags:
+        - Resources
+      summary: List resources
+      description: Get a paginated list of resources
+      operationId: getResources
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Resources retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Resources retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      resources:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Resource'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    post:
+      tags:
+        - Resources
+      summary: Create resource
+      description: Create a new resource
+      operationId: createResource
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+$'
+                  minLength: 2
+                  maxLength: 50
+                  example: inventory
+                description:
+                  type: string
+                  maxLength: 500
+                  example: Inventory management resources
+      responses:
+        '201':
+          description: Resource created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Resource created successfully
+                  data:
+                    type: object
+                    properties:
+                      resource:
+                        $ref: '#/components/schemas/Resource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /resources/{id}:
+    get:
+      tags:
+        - Resources
+      summary: Get resource by ID
+      description: Get detailed information about a specific resource
+      operationId: getResourceById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idParam'
+      responses:
+        '200':
+          description: Resource retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Resource retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      resource:
+                        $ref: '#/components/schemas/Resource'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Resources
+      summary: Update resource
+      description: Update resource information
+      operationId: updateResource
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  maxLength: 500
+                  example: Updated inventory management resources
+      responses:
+        '200':
+          description: Resource updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Resource updated successfully
+                  data:
+                    type: object
+                    properties:
+                      resource:
+                        $ref: '#/components/schemas/Resource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+    delete:
+      tags:
+        - Resources
+      summary: Delete resource
+      description: Delete a resource
+      operationId: deleteResource
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idParam'
+      responses:
+        '200':
+          description: Resource deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Resource deleted successfully
+        '400':
+          description: Cannot delete resource with associated permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'

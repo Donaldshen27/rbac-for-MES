@@ -1,0 +1,698 @@
+paths:
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: List roles
+      description: Get a paginated list of roles with optional filters
+      operationId: getRoles
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/searchParam'
+        - name: isSystem
+          in: query
+          description: Filter by system role status
+          schema:
+            type: boolean
+        - name: parentId
+          in: query
+          description: Filter by parent role ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Roles retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      roles:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Role'
+                            - type: object
+                              properties:
+                                userCount:
+                                  type: integer
+                                  example: 25
+                                permissionCount:
+                                  type: integer
+                                  example: 15
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    post:
+      tags:
+        - Roles
+      summary: Create role
+      description: Create a new role
+      operationId: createRole
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: manager
+                description:
+                  type: string
+                  maxLength: 500
+                  example: Manager role with limited administrative access
+                parentId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  description: Parent role ID for role hierarchy
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role created successfully
+                  data:
+                    type: object
+                    properties:
+                      role:
+                        $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /roles/statistics:
+    get:
+      tags:
+        - Roles
+      summary: Get role statistics
+      description: Get statistics about roles
+      operationId: getRoleStatistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role statistics retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      statistics:
+                        type: object
+                        properties:
+                          totalRoles:
+                            type: integer
+                            example: 12
+                          systemRoles:
+                            type: integer
+                            example: 4
+                          customRoles:
+                            type: integer
+                            example: 8
+                          rolesWithUsers:
+                            type: integer
+                            example: 10
+                          emptyRoles:
+                            type: integer
+                            example: 2
+                          averagePermissionsPerRole:
+                            type: number
+                            example: 15.5
+                          roleHierarchyDepth:
+                            type: integer
+                            example: 3
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /roles/hierarchy:
+    get:
+      tags:
+        - Roles
+      summary: Get role hierarchy
+      description: Get the role hierarchy tree
+      operationId: getRoleHierarchy
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Hierarchy retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role hierarchy retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      hierarchy:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            level:
+                              type: integer
+                            userCount:
+                              type: integer
+                            permissionCount:
+                              type: integer
+                            children:
+                              type: array
+                              items:
+                                type: object
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /roles/bulk-delete:
+    post:
+      tags:
+        - Roles
+      summary: Bulk delete roles
+      description: Delete multiple roles at once
+      operationId: bulkDeleteRoles
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - roleIds
+              properties:
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  maxItems: 50
+      responses:
+        '200':
+          description: Bulk delete successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bulk delete completed
+                  data:
+                    type: object
+                    properties:
+                      deleted:
+                        type: integer
+                        example: 5
+                      failed:
+                        type: integer
+                        example: 2
+                      errors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            roleId:
+                              type: string
+                              format: uuid
+                            error:
+                              type: string
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /roles/{roleId}:
+    get:
+      tags:
+        - Roles
+      summary: Get role by ID
+      description: Get detailed information about a specific role
+      operationId: getRoleById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      role:
+                        allOf:
+                          - $ref: '#/components/schemas/Role'
+                          - type: object
+                            properties:
+                              users:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    id:
+                                      type: string
+                                      format: uuid
+                                    username:
+                                      type: string
+                                    email:
+                                      type: string
+                              permissions:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/Permission'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Roles
+      summary: Update role
+      description: Update role information
+      operationId: updateRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                description:
+                  type: string
+                  maxLength: 500
+                parentId:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role updated successfully
+                  data:
+                    type: object
+                    properties:
+                      role:
+                        $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      tags:
+        - Roles
+      summary: Delete role
+      description: Delete a role
+      operationId: deleteRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role deleted successfully
+        '400':
+          description: Cannot delete role with users or system role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /roles/{roleId}/clone:
+    post:
+      tags:
+        - Roles
+      summary: Clone role
+      description: Create a copy of an existing role
+      operationId: cloneRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID to clone
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: manager_copy
+                description:
+                  type: string
+                  maxLength: 500
+                includePermissions:
+                  type: boolean
+                  default: true
+                  description: Whether to copy permissions from the original role
+      responses:
+        '201':
+          description: Role cloned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role cloned successfully
+                  data:
+                    type: object
+                    properties:
+                      role:
+                        $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /roles/{roleId}/permissions:
+    get:
+      tags:
+        - Roles
+      summary: Get role permissions
+      description: Get all permissions assigned to a role
+      operationId: getRolePermissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role permissions retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      permissions:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Permission'
+                            - type: object
+                              properties:
+                                grantedAt:
+                                  type: string
+                                  format: date-time
+                                grantedBy:
+                                  type: string
+                                  format: uuid
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Roles
+      summary: Update role permissions
+      description: Replace all permissions for a role
+      operationId: updateRolePermissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - permissionIds
+              properties:
+                permissionIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Array of permission IDs to assign to the role
+      responses:
+        '200':
+          description: Permissions updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role permissions updated successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /roles/{roleId}/users:
+    get:
+      tags:
+        - Roles
+      summary: Get role users
+      description: Get all users assigned to a role
+      operationId: getRoleUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Role users retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            username:
+                              type: string
+                            email:
+                              type: string
+                            firstName:
+                              type: string
+                            lastName:
+                              type: string
+                            isActive:
+                              type: boolean
+                            assignedAt:
+                              type: string
+                              format: date-time
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'

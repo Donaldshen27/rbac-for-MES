@@ -1,0 +1,63 @@
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check the health status of the API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: healthy
+                      version:
+                        type: string
+                        example: 1.0.0
+                      timestamp:
+                        type: string
+                        format: date-time
+                        example: '2024-01-01T00:00:00Z'
+                      environment:
+                        type: string
+                        example: development
+                      services:
+                        type: object
+                        properties:
+                          database:
+                            type: string
+                            example: healthy
+
+  /version:
+    get:
+      tags:
+        - Health
+      summary: API version
+      description: Get the API version information
+      operationId: getVersion
+      responses:
+        '200':
+          description: Version information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: 1.0.0
+                  api:
+                    type: string
+                    example: RBAC System API
