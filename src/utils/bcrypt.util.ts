@@ -67,4 +67,8 @@ export class BcryptUtil {
 
     return errors;
   }
+
+  static async generateRandomToken(length: number = 32): Promise<string> {
+    return crypto.randomBytes(length).toString('hex');
+  }
 }
