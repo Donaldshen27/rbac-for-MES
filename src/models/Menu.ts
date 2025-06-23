@@ -34,6 +34,23 @@ export class Menu extends Model<
     children: Association<Menu, Menu>;
   };
 
+  // Association methods for parent (belongsTo)
+  declare getParent: () => Promise<Menu | null>;
+  declare setParent: (parent: Menu | string | null) => Promise<void>;
+  declare createParent: (parent: any) => Promise<Menu>;
+
+  // Association methods for children (hasMany)
+  declare getChildren: () => Promise<Menu[]>;
+  declare setChildren: (children: Menu[] | string[]) => Promise<void>;
+  declare addChild: (child: Menu | string) => Promise<void>;
+  declare addChildren: (children: Menu[] | string[]) => Promise<void>;
+  declare removeChild: (child: Menu | string) => Promise<void>;
+  declare removeChildren: (children: Menu[] | string[]) => Promise<void>;
+  declare hasChild: (child: Menu | string) => Promise<boolean>;
+  declare hasChildren: (children: Menu[] | string[]) => Promise<boolean>;
+  declare countChildren: () => Promise<number>;
+  declare createChild: (child: any) => Promise<Menu>;
+
   // Static methods
   static associate(models: any): void {
     Menu.belongsTo(Menu, {

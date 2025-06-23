@@ -6,7 +6,7 @@ import { AuthUtil } from '../utils/auth.util';
 import { BcryptUtil } from '../utils/bcrypt.util';
 import { JWTUtil } from '../utils/jwt.util';
 import { ApiError } from '../utils/api-error';
-import logger from '../utils/logger';
+import { logger } from '../utils/logger';
 import { LoginCredentials, RegisterData, TokenPair, TokenPayload } from '../types/auth.types';
 import { AuditLog } from '../models/AuditLog';
 
@@ -62,7 +62,7 @@ export class AuthService {
           throw new ApiError(400, 'One or more role IDs are invalid');
         }
 
-        await user.setRoles(roles, { transaction });
+        await user.setRoles(roles);
       } else {
         // Assign default role if exists
         const defaultRole = await Role.findOne({
@@ -71,12 +71,12 @@ export class AuthService {
         });
 
         if (defaultRole) {
-          await user.setRoles([defaultRole], { transaction });
+          await user.setRoles([defaultRole]);
         }
       }
 
       // Generate tokens
-      const tokens = await AuthUtil.generateUserTokens(user, transaction);
+      const tokens = await AuthUtil.generateUserTokens(user, data.ipAddress, data.userAgent);
 
       // Log registration
       await AuditLog.create({
@@ -145,7 +145,7 @@ export class AuthService {
       await user.update({ lastLogin: new Date() }, { transaction });
 
       // Generate tokens
-      const tokens = await AuthUtil.generateUserTokens(user, transaction);
+      const tokens = await AuthUtil.generateUserTokens(user, credentials.ipAddress, credentials.userAgent);
 
       // Log login
       await AuditLog.create({
@@ -181,7 +181,7 @@ export class AuthService {
       const storedToken = await RefreshToken.findOne({
         where: { 
           token: refreshToken,
-          userId: payload.userId 
+          userId: payload.sub 
         },
         include: [
           {
@@ -211,7 +211,7 @@ export class AuthService {
       }
 
       // Check if user is active
-      if (!storedToken.user.isActive) {
+      if (!storedToken.user || !storedToken.user.isActive) {
         throw new ApiError(403, 'Account is inactive');
       }
 
@@ -219,7 +219,7 @@ export class AuthService {
       await storedToken.destroy({ transaction });
 
       // Generate new tokens
-      const tokens = await AuthUtil.generateUserTokens(storedToken.user, transaction);
+      const tokens = await AuthUtil.generateUserTokens(storedToken.user, storedToken.ipAddress, storedToken.userAgent);
 
       logger.info(`Tokens refreshed for user: ${storedToken.user.email}`);
 
@@ -233,14 +233,14 @@ export class AuthService {
   /**
    * Logout user
    */
-  static async logout(userId: number, refreshToken?: string, transaction?: Transaction): Promise<void> {
+  static async logout(userId: string, refreshToken?: string, transaction?: Transaction): Promise<void> {
     try {
       if (refreshToken) {
         // Revoke specific refresh token
-        await AuthUtil.revokeRefreshToken(refreshToken, transaction);
+        await AuthUtil.revokeRefreshToken(refreshToken);
       } else {
         // Revoke all user tokens
-        await AuthUtil.revokeAllUserTokens(userId, transaction);
+        await AuthUtil.revokeAllUserTokens(userId);
       }
 
       // Log logout
@@ -265,7 +265,7 @@ export class AuthService {
    * Change password
    */
   static async changePassword(
-    userId: number, 
+    userId: string, 
     currentPassword: string, 
     newPassword: string,
     transaction?: Transaction
@@ -292,7 +292,7 @@ export class AuthService {
       }, { transaction });
 
       // Revoke all refresh tokens (force re-login)
-      await AuthUtil.revokeAllUserTokens(userId, transaction);
+      await AuthUtil.revokeAllUserTokens(userId);
 
       // Log password change
       await AuditLog.create({
@@ -378,18 +378,21 @@ export class AuthService {
       //   password: hashedPassword
       // }, { transaction });
 
-      // Revoke all refresh tokens
-      await AuthUtil.revokeAllUserTokens(matchedUser.id, transaction);
+      // This code is commented out as the resetPassword functionality needs to be implemented
+      // with a separate PasswordReset model
+      
+      // // Revoke all refresh tokens
+      // await AuthUtil.revokeAllUserTokens(matchedUser.id, transaction);
 
-      // Log password reset
-      await AuditLog.create({
-        userId: matchedUser.id,
-        action: 'PASSWORD_RESET_COMPLETED',
-        resource: 'User',
-        resourceId: matchedUser.id
-      }, { transaction });
+      // // Log password reset
+      // await AuditLog.create({
+      //   userId: matchedUser.id,
+      //   action: 'PASSWORD_RESET_COMPLETED',
+      //   resource: 'User',
+      //   resourceId: matchedUser.id
+      // }, { transaction });
 
-      logger.info(`Password reset completed for user: ${matchedUser.id}`);
+      // logger.info(`Password reset completed for user: ${matchedUser.id}`);
     } catch (error) {
       logger.error('Password reset failed:', error);
       throw error;
@@ -399,7 +402,7 @@ export class AuthService {
   /**
    * Verify email with token
    */
-  static async verifyEmail(userId: number, token: string, transaction?: Transaction): Promise<void> {
+  static async verifyEmail(userId: string, token: string, transaction?: Transaction): Promise<void> {
     try {
       const user = await User.findByPk(userId, { transaction });
       
@@ -429,7 +432,7 @@ export class AuthService {
   /**
    * Get active sessions for a user
    */
-  static async getActiveSessions(userId: number): Promise<RefreshToken[]> {
+  static async getActiveSessions(userId: string): Promise<RefreshToken[]> {
     try {
       const sessions = await RefreshToken.findAll({
         where: { userId },
@@ -446,7 +449,7 @@ export class AuthService {
   /**
    * Revoke a specific session
    */
-  static async revokeSession(userId: number, tokenId: string, transaction?: Transaction): Promise<void> {
+  static async revokeSession(userId: string, tokenId: string, transaction?: Transaction): Promise<void> {
     try {
       const token = await RefreshToken.findOne({
         where: { id: tokenId, userId },

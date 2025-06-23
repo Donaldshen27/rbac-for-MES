@@ -1,0 +1,499 @@
+import { QueryInterface } from 'sequelize';
+
+export default {
+  up: async (queryInterface: QueryInterface): Promise<void> => {
+    const timestamp = new Date();
+    
+    // Additional MES menu items
+    const menus = [
+      // Equipment Management under 基础数据
+      {
+        id: '116',
+        parent_id: '1',
+        title: '设备类型',
+        href: 'page/equipment/type/equipment_type.html',
+        icon: 'fa-solid fa-shapes',
+        target: '_self',
+        order_index: 6,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '117',
+        parent_id: '1',
+        title: '物料定义',
+        href: 'page/base_info/material/material_info.html',
+        icon: 'fa-solid fa-cubes',
+        target: '_self',
+        order_index: 7,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '118',
+        parent_id: '1',
+        title: '班次定义',
+        href: 'page/base_info/shift/shift_info.html',
+        icon: 'fa-solid fa-clock',
+        target: '_self',
+        order_index: 8,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      
+      // Inventory Management menu (new top level)
+      {
+        id: '300',
+        parent_id: null,
+        title: '库存管理',
+        href: '',
+        icon: 'fa-solid fa-warehouse',
+        target: '_self',
+        order_index: 3,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '301',
+        parent_id: '300',
+        title: '物料领用',
+        href: 'page/inventory/material/material_issue.html',
+        icon: 'fa-solid fa-hand-holding-box',
+        target: '_self',
+        order_index: 1,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '302',
+        parent_id: '300',
+        title: '物料退回',
+        href: 'page/inventory/material/material_return.html',
+        icon: 'fa-solid fa-rotate-left',
+        target: '_self',
+        order_index: 2,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '303',
+        parent_id: '300',
+        title: '库存查询',
+        href: 'page/inventory/query/inventory_query.html',
+        icon: 'fa-solid fa-magnifying-glass',
+        target: '_self',
+        order_index: 3,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '304',
+        parent_id: '300',
+        title: '库存盘点',
+        href: 'page/inventory/count/inventory_count.html',
+        icon: 'fa-solid fa-clipboard-check',
+        target: '_self',
+        order_index: 4,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '305',
+        parent_id: '300',
+        title: '库存调整',
+        href: 'page/inventory/adjust/inventory_adjust.html',
+        icon: 'fa-solid fa-sliders',
+        target: '_self',
+        order_index: 5,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      
+      // Equipment Management menu (new top level)
+      {
+        id: '400',
+        parent_id: null,
+        title: '设备管理',
+        href: '',
+        icon: 'fa-solid fa-gear',
+        target: '_self',
+        order_index: 4,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '401',
+        parent_id: '400',
+        title: '设备监控',
+        href: 'page/equipment/monitor/equipment_monitor.html',
+        icon: 'fa-solid fa-display',
+        target: '_self',
+        order_index: 1,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '402',
+        parent_id: '400',
+        title: '维护计划',
+        href: 'page/equipment/maintenance/maintenance_plan.html',
+        icon: 'fa-solid fa-calendar-alt',
+        target: '_self',
+        order_index: 2,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '403',
+        parent_id: '400',
+        title: '维护记录',
+        href: 'page/equipment/maintenance/maintenance_record.html',
+        icon: 'fa-solid fa-tools',
+        target: '_self',
+        order_index: 3,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '404',
+        parent_id: '400',
+        title: 'OEE分析',
+        href: 'page/equipment/oee/oee_analysis.html',
+        icon: 'fa-solid fa-chart-pie',
+        target: '_self',
+        order_index: 4,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      
+      // Additional production submenus
+      {
+        id: '226',
+        parent_id: '2',
+        title: '生产追溯',
+        href: 'page/production/trace/production_trace.html',
+        icon: 'fa-solid fa-route',
+        target: '_self',
+        order_index: 5,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '227',
+        parent_id: '2',
+        title: '异常管理',
+        href: 'page/production/exception/exception_management.html',
+        icon: 'fa-solid fa-triangle-exclamation',
+        target: '_self',
+        order_index: 6,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      
+      // Additional quality submenus
+      {
+        id: 'A03',
+        parent_id: 'A',
+        title: 'SPC控制',
+        href: 'page/quality/spc/spc_control.html',
+        icon: 'fa-solid fa-chart-line',
+        target: '_self',
+        order_index: 3,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: 'A04',
+        parent_id: 'A',
+        title: '质检标准',
+        href: 'page/quality/standard/quality_standard.html',
+        icon: 'fa-solid fa-ruler',
+        target: '_self',
+        order_index: 4,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: 'A05',
+        parent_id: 'A',
+        title: '不良品处理',
+        href: 'page/quality/defective/defective_handling.html',
+        icon: 'fa-solid fa-xmark-circle',
+        target: '_self',
+        order_index: 5,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      
+      // Additional report submenus
+      {
+        id: '504',
+        parent_id: '5',
+        title: '库存报表',
+        href: 'page/report/inventory/inventory_report.html',
+        icon: 'fa-solid fa-file-invoice',
+        target: '_self',
+        order_index: 4,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '505',
+        parent_id: '5',
+        title: '综合分析',
+        href: 'page/report/analytics/comprehensive_analysis.html',
+        icon: 'fa-solid fa-file-chart-column',
+        target: '_self',
+        order_index: 5,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '506',
+        parent_id: '5',
+        title: '自定义报表',
+        href: 'page/report/custom/custom_report.html',
+        icon: 'fa-solid fa-file-pen',
+        target: '_self',
+        order_index: 6,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      
+      // Additional system submenus
+      {
+        id: '706',
+        parent_id: '7',
+        title: '系统配置',
+        href: 'page/system/config/system_config.html',
+        icon: 'fa-solid fa-gear',
+        target: '_self',
+        order_index: 6,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '707',
+        parent_id: '7',
+        title: '数据备份',
+        href: 'page/system/backup/data_backup.html',
+        icon: 'fa-solid fa-database',
+        target: '_self',
+        order_index: 7,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      },
+      {
+        id: '708',
+        parent_id: '7',
+        title: '系统监控',
+        href: 'page/system/monitor/system_monitor.html',
+        icon: 'fa-solid fa-heart-pulse',
+        target: '_self',
+        order_index: 8,
+        is_active: true,
+        created_at: timestamp,
+        updated_at: timestamp
+      }
+    ];
+
+    // Note: The order_index for existing menus '5' and '7' would be 6 and 7 respectively
+    // to accommodate the new top-level menus '300' and '400' at positions 3 and 4
+
+    // Split menus into top-level and child menus to avoid foreign key constraint issues
+    const topLevelMenus = menus.filter(m => m.parent_id === null);
+    const childMenus = menus.filter(m => m.parent_id !== null);
+
+    // Insert top-level menus first
+    if (topLevelMenus.length > 0) {
+      await queryInterface.bulkInsert('menus', topLevelMenus);
+    }
+
+    // Then insert child menus
+    if (childMenus.length > 0) {
+      await queryInterface.bulkInsert('menus', childMenus);
+    }
+
+    // Add menu permissions for the new roles
+    const [roles] = await queryInterface.sequelize.query(
+      `SELECT id, name FROM roles WHERE name IN ('maintenance_supervisor', 'warehouse_manager', 'shift_supervisor', 'material_handler', 'planning_manager', 'quality_manager', 'process_engineer', 'data_analyst')`
+    );
+
+    const roleMap = new Map((roles as any[]).map(r => [r.name, r.id]));
+    const menuPermissions: any[] = [];
+
+    // Maintenance supervisor - equipment and maintenance menus
+    const maintenanceId = roleMap.get('maintenance_supervisor');
+    if (maintenanceId) {
+      const maintenanceMenuIds = ['1', '15', '116', '400', '401', '402', '403', '404', '5', '53'];
+      maintenanceMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: maintenanceId,
+          can_view: true,
+          can_edit: menuId.startsWith('40'),
+          can_delete: false,
+          can_export: true
+        });
+      });
+    }
+
+    // Warehouse manager - inventory menus
+    const warehouseId = roleMap.get('warehouse_manager');
+    if (warehouseId) {
+      const warehouseMenuIds = ['1', '117', '300', '301', '302', '303', '304', '305', '5', '504'];
+      warehouseMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: warehouseId,
+          can_view: true,
+          can_edit: menuId.startsWith('30'),
+          can_delete: false,
+          can_export: true
+        });
+      });
+    }
+
+    // Shift supervisor - production and shift menus
+    const shiftId = roleMap.get('shift_supervisor');
+    if (shiftId) {
+      const shiftMenuIds = ['1', '118', '2', '24', '25', '226', '227', '28', 'A', 'A1'];
+      shiftMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: shiftId,
+          can_view: true,
+          can_edit: ['25', '227'].includes(menuId),
+          can_delete: false,
+          can_export: false
+        });
+      });
+    }
+
+    // Material handler - material and inventory menus
+    const materialId = roleMap.get('material_handler');
+    if (materialId) {
+      const materialMenuIds = ['1', '117', '300', '301', '302', '303'];
+      materialMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: materialId,
+          can_view: true,
+          can_edit: ['301', '302'].includes(menuId),
+          can_delete: false,
+          can_export: false
+        });
+      });
+    }
+
+    // Planning manager - planning and production menus
+    const planningId = roleMap.get('planning_manager');
+    if (planningId) {
+      const planningMenuIds = ['1', '11', '12', '13', '14', '15', '117', '118', '2', '21', '211', '212', '24', '300', '303', '5', '51', '504', '505'];
+      planningMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: planningId,
+          can_view: true,
+          can_edit: ['21', '211', '212'].includes(menuId),
+          can_delete: false,
+          can_export: true
+        });
+      });
+    }
+
+    // Quality manager - all quality menus
+    const qualityManagerId = roleMap.get('quality_manager');
+    if (qualityManagerId) {
+      const qualityManagerMenuIds = ['A', 'A1', 'A2', 'A03', 'A04', 'A05', '2', '25', '226', '5', '52', '505'];
+      qualityManagerMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: qualityManagerId,
+          can_view: true,
+          can_edit: menuId.startsWith('A'),
+          can_delete: menuId.startsWith('A'),
+          can_export: true
+        });
+      });
+    }
+
+    // Process engineer - process and product menus
+    const processId = roleMap.get('process_engineer');
+    if (processId) {
+      const processMenuIds = ['1', '11', '12', '13', '14', '15', '116', '117', '2', '21', 'A', 'A04'];
+      processMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: processId,
+          can_view: true,
+          can_edit: ['11', '12', '13', '14'].includes(menuId),
+          can_delete: false,
+          can_export: true
+        });
+      });
+    }
+
+    // Data analyst - all report menus
+    const analystId = roleMap.get('data_analyst');
+    if (analystId) {
+      const analystMenuIds = ['5', '51', '52', '53', '504', '505', '506', '2', '28', 'A', '400', '404'];
+      analystMenuIds.forEach(menuId => {
+        menuPermissions.push({
+          menu_id: menuId,
+          role_id: analystId,
+          can_view: true,
+          can_edit: menuId === '506',
+          can_delete: false,
+          can_export: true
+        });
+      });
+    }
+
+    if (menuPermissions.length > 0) {
+      await queryInterface.bulkInsert('menu_permissions', menuPermissions);
+    }
+  },
+
+  down: async (queryInterface: QueryInterface): Promise<void> => {
+    // Delete menu permissions for new menus
+    const newMenuIds = [
+      '116', '117', '118', '300', '301', '302', '303', '304', '305',
+      '400', '401', '402', '403', '404', '226', '227', 'A03', 'A04', 'A05',
+      '504', '505', '506', '706', '707', '708'
+    ];
+    
+    await queryInterface.bulkDelete('menu_permissions', {
+      menu_id: newMenuIds
+    }, {});
+    
+    // Then delete menus
+    await queryInterface.bulkDelete('menus', {
+      id: newMenuIds
+    }, {});
+  }
+};

@@ -40,6 +40,18 @@ export class User extends Model<
     auditLogs: Association<User, AuditLog>;
   };
 
+  // Association methods for roles (belongsToMany)
+  declare getRoles: () => Promise<Role[]>;
+  declare setRoles: (roles: Role[] | string[]) => Promise<void>;
+  declare addRole: (role: Role | string) => Promise<void>;
+  declare addRoles: (roles: Role[] | string[]) => Promise<void>;
+  declare removeRole: (role: Role | string) => Promise<void>;
+  declare removeRoles: (roles: Role[] | string[]) => Promise<void>;
+  declare hasRole: (role: Role | string) => Promise<boolean>;
+  declare hasRoles: (roles: Role[] | string[]) => Promise<boolean>;
+  declare countRoles: () => Promise<number>;
+  declare createRole: (role: any) => Promise<Role>;
+
   // Instance methods
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password);
@@ -59,8 +71,11 @@ export class User extends Model<
 
   toJSON(): any {
     const values = { ...this.get() };
-    delete values.password;
-    return values;
+    const result: any = { ...values };
+    if ('password' in result) {
+      delete result.password;
+    }
+    return result;
   }
 
   // Static methods

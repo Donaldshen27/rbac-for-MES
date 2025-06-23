@@ -1,5 +1,5 @@
 import { Transaction, Op, WhereOptions } from 'sequelize';
-import { Permission, Role, RolePermission, Resource } from '@models';
+import { Permission, Role, RolePermission, Resource } from '../models';
 import {
   IPermission,
   IPermissionCreate,
@@ -12,10 +12,10 @@ import {
   IResourceCreate,
   IResourceFilters,
   IResourcePaginationResult,
-} from '@types/permission.types';
-import { ApiError } from '@utils/ApiError';
-import { sequelize } from '@config/database';
-import logger from '@utils/logger';
+} from '../types/permission.types';
+import { ApiError } from '../utils/api-error';
+import { sequelize } from '../config/database';
+import { logger } from '../utils/logger';
 
 export class PermissionService {
   async createPermission(data: IPermissionCreate): Promise<IPermission> {
@@ -35,7 +35,13 @@ export class PermissionService {
         throw new ApiError(409, 'Permission already exists');
       }
 
-      const permission = await Permission.create(data, { transaction });
+      // Generate permission name if not provided
+      const permissionData = {
+        ...data,
+        name: data.name || Permission.formatPermissionName(data.resource, data.action)
+      };
+
+      const permission = await Permission.create(permissionData, { transaction });
 
       await transaction.commit();
 
@@ -68,7 +74,7 @@ export class PermissionService {
     }
 
     if (search) {
-      where[Op.or] = [
+      (where as any)[Op.or] = [
         { name: { [Op.like]: `%${search}%` } },
         { description: { [Op.like]: `%${search}%` } }
       ];
@@ -337,7 +343,7 @@ export class PermissionService {
     const where: WhereOptions<Resource> = {};
 
     if (search) {
-      where[Op.or] = [
+      (where as any)[Op.or] = [
         { name: { [Op.like]: `%${search}%` } },
         { description: { [Op.like]: `%${search}%` } }
       ];

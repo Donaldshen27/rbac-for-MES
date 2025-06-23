@@ -20,6 +20,8 @@ export class RefreshToken extends Model<
   declare userId: ForeignKey<User['id']>;
   declare token: string;
   declare expiresAt: Date;
+  declare ipAddress: CreationOptional<string | null>;
+  declare userAgent: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
 
   // Associations
@@ -107,6 +109,14 @@ RefreshToken.init(
     expiresAt: {
       type: DataTypes.DATE,
       allowNull: false,
+    },
+    ipAddress: {
+      type: DataTypes.STRING(45), // Supports IPv6
+      allowNull: true,
+    },
+    userAgent: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     createdAt: DataTypes.DATE,
   },

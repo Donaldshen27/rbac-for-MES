@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import Joi from 'joi';
 import { UserController } from '../controllers/user.controller';
 import { authenticate, requireRole, requirePermission } from '../middlewares/auth.middleware';
 import { validate, ValidationTarget } from '../middlewares/validation.middleware';
@@ -55,11 +56,11 @@ router.get(
 router.put(
   '/profile',
   validate(
-    {
-      firstName: updateUserSchema.extract('firstName'),
-      lastName: updateUserSchema.extract('lastName'),
-      email: updateUserSchema.extract('email')
-    },
+    Joi.object({
+      firstName: Joi.string().trim().min(1).max(50).pattern(/^[a-zA-Z\s'-]+$/).optional(),
+      lastName: Joi.string().trim().min(1).max(50).pattern(/^[a-zA-Z\s'-]+$/).optional(),
+      email: Joi.string().email().optional()
+    }).min(1),
     ValidationTarget.BODY
   ),
   UserController.updateUserProfile
@@ -120,9 +121,9 @@ router.put(
   requirePermission('users:manage-roles'),
   validate(userIdSchema, ValidationTarget.PARAMS),
   validate(
-    {
-      roleIds: createUserSchema.extract('roleIds').required()
-    },
+    Joi.object({
+      roleIds: Joi.array().items(Joi.string().uuid()).unique().required()
+    }),
     ValidationTarget.BODY
   ),
   UserController.updateUserRoles

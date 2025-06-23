@@ -30,7 +30,7 @@ export class UserService {
       const where: WhereOptions<User> = {};
 
       if (filter.search) {
-        where[Op.or] = [
+        (where as any)[Op.or] = [
           { email: { [Op.like]: `%${filter.search}%` } },
           { username: { [Op.like]: `%${filter.search}%` } },
           { firstName: { [Op.like]: `%${filter.search}%` } },
@@ -56,7 +56,7 @@ export class UserService {
       }
 
       // Query with role filtering if needed
-      const includeOptions = {
+      const includeOptions: any = {
         model: Role,
         as: 'roles',
         attributes: ['id', 'name', 'description'],
@@ -64,8 +64,8 @@ export class UserService {
       };
 
       if (filter.roleIds && filter.roleIds.length > 0) {
-        includeOptions['where'] = { id: filter.roleIds };
-        includeOptions['required'] = true;
+        includeOptions.where = { id: filter.roleIds };
+        includeOptions.required = true;
       }
 
       const { count, rows } = await User.findAndCountAll({
@@ -184,7 +184,7 @@ export class UserService {
           throw new ApiError(400, 'One or more role IDs are invalid');
         }
 
-        await user.setRoles(roles, { transaction });
+        await user.setRoles(roles);
         user.roles = roles;
       }
 
@@ -251,8 +251,8 @@ export class UserService {
       const allowedFields = ['email', 'username', 'firstName', 'lastName', 'isActive', 'isSuperuser'];
       
       for (const field of allowedFields) {
-        if (data[field] !== undefined) {
-          updateData[field] = data[field];
+        if ((data as any)[field] !== undefined) {
+          updateData[field] = (data as any)[field];
         }
       }
 
@@ -271,7 +271,7 @@ export class UserService {
           throw new ApiError(400, 'One or more role IDs are invalid');
         }
 
-        await user.setRoles(roles, { transaction });
+        await user.setRoles(roles);
         user.roles = roles;
       }
 
@@ -450,7 +450,7 @@ export class UserService {
       }
 
       // Update roles
-      await user.setRoles(roles, { transaction });
+      await user.setRoles(roles);
       user.roles = roles;
 
       // Create audit log

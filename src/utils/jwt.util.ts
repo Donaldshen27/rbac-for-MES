@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { AppError } from './errors';
+import { AppError, AuthenticationError } from './errors';
+import { ErrorCode } from '../types';
 
 export interface JWTPayload {
   sub: string;
@@ -26,9 +27,9 @@ export class JWTUtil {
   private static readonly REFRESH_TOKEN_EXPIRY = config.jwt.refreshExpiresIn;
 
   static generateAccessToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-    return jwt.sign(payload, this.JWT_SECRET, {
+    return jwt.sign(payload as any, this.JWT_SECRET, {
       expiresIn: this.JWT_EXPIRY
-    });
+    } as jwt.SignOptions);
   }
 
   static generateRefreshToken(userId: string, tokenId: string): string {
@@ -37,9 +38,9 @@ export class JWTUtil {
       tokenId
     };
 
-    return jwt.sign(payload, this.REFRESH_TOKEN_SECRET, {
+    return jwt.sign(payload as any, this.REFRESH_TOKEN_SECRET, {
       expiresIn: this.REFRESH_TOKEN_EXPIRY
-    });
+    } as jwt.SignOptions);
   }
 
   static verifyAccessToken(token: string): JWTPayload {
@@ -47,9 +48,9 @@ export class JWTUtil {
       return jwt.verify(token, this.JWT_SECRET) as JWTPayload;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        throw new AppError('Token expired', 401, 'AUTH_002');
+        throw new AuthenticationError(ErrorCode.AUTH_TOKEN_EXPIRED, 'Token expired');
       } else if (error instanceof jwt.JsonWebTokenError) {
-        throw new AppError('Invalid token', 401, 'AUTH_003');
+        throw new AuthenticationError(ErrorCode.AUTH_TOKEN_INVALID, 'Invalid token');
       }
       throw error;
     }
@@ -60,9 +61,9 @@ export class JWTUtil {
       return jwt.verify(token, this.REFRESH_TOKEN_SECRET) as RefreshTokenPayload;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        throw new AppError('Refresh token expired', 401, 'AUTH_002');
+        throw new AuthenticationError(ErrorCode.AUTH_TOKEN_EXPIRED, 'Refresh token expired');
       } else if (error instanceof jwt.JsonWebTokenError) {
-        throw new AppError('Invalid refresh token', 401, 'AUTH_003');
+        throw new AuthenticationError(ErrorCode.AUTH_TOKEN_INVALID, 'Invalid refresh token');
       }
       throw error;
     }

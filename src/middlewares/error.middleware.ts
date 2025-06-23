@@ -7,12 +7,12 @@ import {
   handleSequelizeError 
 } from '@utils/errors';
 import { ResponseUtil } from '@utils/response';
-import { ErrorCode } from '@types/index';
+import { ErrorCode } from '../types';
 import { ValidationError as JoiValidationError } from 'joi';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 // 404 Not Found handler
-export const notFoundHandler = (req: Request, res: Response, next: NextFunction): void => {
+export const notFoundHandler = (req: Request, _res: Response, next: NextFunction): void => {
   const error = new AppError(
     ErrorCode.NOT_FOUND,
     `Cannot ${req.method} ${req.originalUrl}`,
@@ -26,7 +26,7 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   // Log error details
   logger.error({

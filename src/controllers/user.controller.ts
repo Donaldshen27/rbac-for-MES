@@ -11,7 +11,7 @@ import {
   PaginatedResult,
   UserWithRoles
 } from '../types/user.types';
-import logger from '../utils/logger';
+import { logger } from '../utils/logger';
 import { sequelize } from '../config/database';
 
 export class UserController {

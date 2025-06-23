@@ -1,20 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../utils/ApiError';
+import { AppError } from '../utils/errors';
+import { ErrorCode } from '../types';
 import permissionService from '../services/permission.service';
-import logger from '../utils/logger';
+import { logger } from '../utils/logger';
+import { AuthUser } from './auth.middleware';
 
 /**
  * Extended Request interface with user property
  */
 interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    username: string;
-    email: string;
-    roles: string[];
-    permissions: string[];
-    isSuperuser: boolean;
-  };
+  user?: AuthUser;
 }
 
 /**
@@ -39,7 +34,7 @@ export const requirePermission = (
     try {
       // Check if user is authenticated
       if (!authReq.user) {
-        throw new ApiError(401, 'Authentication required');
+        throw new AppError(ErrorCode.AUTH_TOKEN_INVALID, 'Authentication required', 401);
       }
 
       // Superusers bypass all permission checks
@@ -88,7 +83,7 @@ export const requirePermission = (
 
       if (!hasPermission) {
         logger.warn(`Access denied for user ${authReq.user.username}: Missing permission(s) ${requiredPermissions.join(', ')}`);
-        throw new ApiError(403, 'Insufficient permissions');
+        throw new AppError(ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS, 'Insufficient permissions', 403);
       }
 
       next();
@@ -109,7 +104,7 @@ export const requireRole = (roles: string | string[]) => {
     const authReq = req as AuthRequest;
 
     if (!authReq.user) {
-      return next(new ApiError(401, 'Authentication required'));
+      return next(new AppError(ErrorCode.AUTH_TOKEN_INVALID, 'Authentication required', 401));
     }
 
     if (authReq.user.isSuperuser) {
@@ -120,7 +115,7 @@ export const requireRole = (roles: string | string[]) => {
 
     if (!hasRole) {
       logger.warn(`Access denied for user ${authReq.user.username}: Missing role(s) ${requiredRoles.join(', ')}`);
-      return next(new ApiError(403, 'Insufficient role privileges'));
+      return next(new AppError(ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS, 'Insufficient role privileges', 403));
     }
 
     next();
@@ -144,7 +139,7 @@ export const requireOwnershipOrPermission = (
 
     try {
       if (!authReq.user) {
-        throw new ApiError(401, 'Authentication required');
+        throw new AppError(ErrorCode.AUTH_TOKEN_INVALID, 'Authentication required', 401);
       }
 
       if (authReq.user.isSuperuser) {
@@ -179,7 +174,7 @@ export const requireOwnershipOrPermission = (
       );
 
       if (!hasPermission) {
-        throw new ApiError(403, 'Access denied: Not owner and insufficient permissions');
+        throw new AppError(ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS, 'Access denied: Not owner and insufficient permissions', 403);
       }
 
       next();
@@ -196,12 +191,12 @@ export const requireSuperuser = (req: Request, res: Response, next: NextFunction
   const authReq = req as AuthRequest;
 
   if (!authReq.user) {
-    return next(new ApiError(401, 'Authentication required'));
+    return next(new AppError(ErrorCode.AUTH_TOKEN_INVALID, 'Authentication required', 401));
   }
 
   if (!authReq.user.isSuperuser) {
     logger.warn(`Superuser access denied for user ${authReq.user.username}`);
-    return next(new ApiError(403, 'Superuser access required'));
+    return next(new AppError(ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS, 'Superuser access required', 403));
   }
 
   next();
@@ -280,7 +275,7 @@ export const requireResourcePermission = (resource: string) => {
 
     const action = methodPermissionMap[req.method];
     if (!action) {
-      return next(new ApiError(405, 'Method not allowed'));
+      return next(new AppError(ErrorCode.VALIDATION_ERROR, 'Method not allowed', 405));
     }
 
     const permission = `${resource}:${action}`;
@@ -315,7 +310,7 @@ export const requireAny = (
     }
 
     // All middlewares failed, return the last error
-    next(lastError || new ApiError(403, 'Access denied'));
+    next(lastError || new AppError(ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS, 'Access denied', 403));
   };
 };
 

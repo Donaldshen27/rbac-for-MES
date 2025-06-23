@@ -177,3 +177,8 @@ export const extendedJoi = Joi.extend({
     },
   },
 });
+
+/**
+ * Validate request - alias for validateMultiple for backward compatibility
+ */
+export const validateRequest = validateMultiple;

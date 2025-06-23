@@ -1,35 +1,29 @@
+import { Op } from 'sequelize';
 import { User, Role, Permission } from '../models';
 import { JWTUtil } from './jwt.util';
 import { BcryptUtil } from './bcrypt.util';
-import { AppError } from './errors';
+import { AppError, AuthenticationError } from './errors';
+import { ErrorCode } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { RefreshToken } from '../models';
 import { AuthTokens } from '../types';
 import { config } from '../config';
 
 export class AuthUtil {
-  static async generateUserTokens(user: User): Promise<AuthTokens> {
+  static async generateUserTokens(user: User, ipAddress?: string | null, userAgent?: string | null): Promise<AuthTokens> {
     // Get user roles and permissions
-    const roles = await user.getRoles({
-      attributes: ['name'],
-      include: [
-        {
-          model: Permission,
-          attributes: ['name'],
-          through: { attributes: [] }
-        }
-      ]
-    });
+    const roles = await user.getRoles();
 
     const roleNames = roles.map(role => role.name);
     const permissions = new Set<string>();
 
-    // Collect all permissions from roles
-    roles.forEach(role => {
-      role.permissions?.forEach(permission => {
+    // Load permissions for each role
+    for (const role of roles) {
+      const rolePermissions = await role.getPermissions();
+      rolePermissions.forEach(permission => {
         permissions.add(permission.name);
       });
-    });
+    }
 
     // Generate tokens
     const tokenId = uuidv4();
@@ -48,7 +42,9 @@ export class AuthUtil {
       id: tokenId,
       userId: user.id,
       token: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + this.getRefreshTokenExpiryMs())
+      expiresAt: new Date(Date.now() + this.getRefreshTokenExpiryMs()),
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null
     });
 
     // Update last login
@@ -61,7 +57,7 @@ export class AuthUtil {
     // Find user by username or email
     const user = await User.findOne({
       where: {
-        [User.sequelize!.Op.or]: [
+        [Op.or]: [
           { username },
           { email: username }
         ]
@@ -69,18 +65,18 @@ export class AuthUtil {
     });
 
     if (!user) {
-      throw new AppError('Invalid credentials', 401, 'AUTH_001');
+      throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Invalid credentials');
     }
 
     // Check if user is active
     if (!user.isActive) {
-      throw new AppError('Account disabled', 403, 'AUTH_005');
+      throw new AuthenticationError(ErrorCode.AUTH_ACCOUNT_DISABLED, 'Account disabled');
     }
 
     // Verify password
     const isValidPassword = await BcryptUtil.comparePassword(password, user.password);
     if (!isValidPassword) {
-      throw new AppError('Invalid credentials', 401, 'AUTH_001');
+      throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Invalid credentials');
     }
 
     return user;
@@ -106,7 +102,7 @@ export class AuthUtil {
     const result = await RefreshToken.destroy({
       where: {
         expiresAt: {
-          [RefreshToken.sequelize!.Op.lt]: new Date()
+          [Op.lt]: new Date()
         }
       }
     });

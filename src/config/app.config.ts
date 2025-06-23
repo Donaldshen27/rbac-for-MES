@@ -77,4 +77,5 @@ if (config.env === 'production') {
   }
 }
 
+export const appConfig = config;
 export default config;

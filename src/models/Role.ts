@@ -34,6 +34,30 @@ export class Role extends Model<
     menus: Association<Role, Menu>;
   };
 
+  // Association methods for users (belongsToMany)
+  declare getUsers: () => Promise<User[]>;
+  declare setUsers: (users: User[] | string[]) => Promise<void>;
+  declare addUser: (user: User | string) => Promise<void>;
+  declare addUsers: (users: User[] | string[]) => Promise<void>;
+  declare removeUser: (user: User | string) => Promise<void>;
+  declare removeUsers: (users: User[] | string[]) => Promise<void>;
+  declare hasUser: (user: User | string) => Promise<boolean>;
+  declare hasUsers: (users: User[] | string[]) => Promise<boolean>;
+  declare countUsers: () => Promise<number>;
+  declare createUser: (user: any) => Promise<User>;
+
+  // Association methods for permissions (belongsToMany)
+  declare getPermissions: () => Promise<Permission[]>;
+  declare setPermissions: (permissions: Permission[] | string[]) => Promise<void>;
+  declare addPermission: (permission: Permission | string) => Promise<void>;
+  declare addPermissions: (permissions: Permission[] | string[]) => Promise<void>;
+  declare removePermission: (permission: Permission | string) => Promise<void>;
+  declare removePermissions: (permissions: Permission[] | string[]) => Promise<void>;
+  declare hasPermission: (permission: Permission | string) => Promise<boolean>;
+  declare hasPermissions: (permissions: Permission[] | string[]) => Promise<boolean>;
+  declare countPermissions: () => Promise<number>;
+  declare createPermission: (permission: any) => Promise<Permission>;
+
   // Static methods
   static associate(models: any): void {
     Role.belongsToMany(models.User, {
@@ -57,7 +81,7 @@ export class Role extends Model<
   }
 
   // Instance methods
-  async hasPermission(permissionName: string): Promise<boolean> {
+  async hasPermissionByName(permissionName: string): Promise<boolean> {
     if (!this.permissions) {
       await this.reload({ include: ['permissions'] });
     }

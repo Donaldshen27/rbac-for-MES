@@ -1,4 +1,4 @@
-import { ErrorCode } from '@types/index';
+import { ErrorCode } from '../types';
 
 export class AppError extends Error {
   public readonly code: ErrorCode;

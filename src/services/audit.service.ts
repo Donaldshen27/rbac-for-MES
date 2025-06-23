@@ -291,10 +291,10 @@ export class AuditService {
       if (filter.startDate || filter.endDate) {
         where.createdAt = {};
         if (filter.startDate) {
-          where.createdAt[Op.gte] = filter.startDate;
+          (where.createdAt as any)[Op.gte] = filter.startDate;
         }
         if (filter.endDate) {
-          where.createdAt[Op.lte] = filter.endDate;
+          (where.createdAt as any)[Op.lte] = filter.endDate;
         }
       }
 
@@ -422,13 +422,14 @@ export class AuditService {
       const where: WhereOptions<AuditLog> = {};
       
       if (startDate || endDate) {
-        where.createdAt = {};
+        const dateFilter: any = {};
         if (startDate) {
-          where.createdAt[Op.gte] = startDate;
+          dateFilter[Op.gte] = startDate;
         }
         if (endDate) {
-          where.createdAt[Op.lte] = endDate;
+          dateFilter[Op.lte] = endDate;
         }
+        where.createdAt = dateFilter;
       }
 
       // Get total count

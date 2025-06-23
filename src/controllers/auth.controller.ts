@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 import { ApiResponse } from '../utils/response';
 import { ApiError } from '../utils/api-error';
-import logger from '../utils/logger';
+import { logger } from '../utils/logger';
 
 export class AuthController {
   /**
@@ -177,11 +178,15 @@ export class AuthController {
       const userId = req.user!.id;
       const { firstName, lastName, username } = req.body;
 
-      const user = await req.user!.update({
-        firstName,
-        lastName,
-        username
-      });
+      const user = await UserService.updateUser(
+        userId,
+        {
+          firstName,
+          lastName,
+          username
+        },
+        userId // User is updating their own profile
+      );
 
       const userResponse = {
         id: user.id,

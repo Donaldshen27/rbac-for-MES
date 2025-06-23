@@ -29,6 +29,18 @@ export class Permission extends Model<
     roles: Association<Permission, Role>;
   };
 
+  // Association methods for roles (belongsToMany)
+  declare getRoles: () => Promise<Role[]>;
+  declare setRoles: (roles: Role[] | string[]) => Promise<void>;
+  declare addRole: (role: Role | string) => Promise<void>;
+  declare addRoles: (roles: Role[] | string[]) => Promise<void>;
+  declare removeRole: (role: Role | string) => Promise<void>;
+  declare removeRoles: (roles: Role[] | string[]) => Promise<void>;
+  declare hasRole: (role: Role | string) => Promise<boolean>;
+  declare hasRoles: (roles: Role[] | string[]) => Promise<boolean>;
+  declare countRoles: () => Promise<number>;
+  declare createRole: (role: any) => Promise<Role>;
+
   // Static methods
   static associate(models: any): void {
     Permission.belongsToMany(models.Role, {

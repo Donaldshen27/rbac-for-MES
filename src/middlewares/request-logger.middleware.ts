@@ -91,7 +91,7 @@ export const sanitizeBody = (body: any): any => {
 /**
  * Enhanced request logger with body logging (sanitized)
  */
-export const detailedRequestLogger = (req: Request, res: Response, next: NextFunction): void => {
+export const detailedRequestLogger = (req: Request, _res: Response, next: NextFunction): void => {
   req.startTime = Date.now();
 
   // Log detailed request

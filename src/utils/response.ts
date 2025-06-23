@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ApiResponse, ApiError, PaginatedResponse } from '@types/index';
+import { ApiResponse as ApiResponseType, ApiError, PaginatedResponse } from '../types';
 
 export class ResponseUtil {
   // Success responses
@@ -9,7 +9,7 @@ export class ResponseUtil {
     message?: string,
     statusCode = 200
   ): Response {
-    const response: ApiResponse<T> = {
+    const response: ApiResponseType<T> = {
       success: true,
       data,
       message,
@@ -65,7 +65,7 @@ export class ResponseUtil {
       path: path || res.req?.originalUrl,
     };
 
-    const response: ApiResponse = {
+    const response: ApiResponseType = {
       success: false,
       error,
     };
@@ -157,9 +157,13 @@ export const {
   internalError,
 } = ResponseUtil;
 
+// Legacy aliases for backward compatibility
+export const successResponse = success;
+export const errorResponse = error;
+
 // Static ApiResponse helper for controllers
 export class ApiResponse {
-  static success<T>(data: T, message?: string): ApiResponse<T> {
+  static success<T>(data: T, message?: string): ApiResponseType<T> {
     return {
       success: true,
       data,
@@ -167,7 +171,7 @@ export class ApiResponse {
     };
   }
 
-  static error(code: string, message: string, details?: any): ApiResponse {
+  static error(code: string, message: string, details?: any): ApiResponseType {
     return {
       success: false,
       error: {

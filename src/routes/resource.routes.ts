@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import permissionController from '@controllers/permission.controller';
+import resourceController from '@controllers/resource.controller';
 import { authenticate } from '@middlewares/auth.middleware';
 import { requirePermission } from '@middlewares/permission.middleware';
 import { validateRequest } from '@middlewares/validation.middleware';
@@ -20,35 +20,35 @@ router.post(
   '/',
   requirePermission('resource:create'),
   validateRequest({ body: createResourceSchema }),
-  permissionController.createResource
+  resourceController.createResource
 );
 
 router.get(
   '/',
   requirePermission('resource:read'),
   validateRequest({ query: listResourcesSchema }),
-  permissionController.getResources
+  resourceController.getResources
 );
 
 router.get(
   '/:id',
   requirePermission('resource:read'),
   validateRequest({ params: validateId }),
-  permissionController.getResourceById
+  resourceController.getResourceById
 );
 
 router.put(
   '/:id',
   requirePermission('resource:update'),
   validateRequest({ params: validateId, body: updateResourceSchema }),
-  permissionController.updateResource
+  resourceController.updateResource
 );
 
 router.delete(
   '/:id',
   requirePermission('resource:delete'),
   validateRequest({ params: validateId }),
-  permissionController.deleteResource
+  resourceController.deleteResource
 );
 
 export default router;

@@ -38,7 +38,7 @@ export class RoleService {
       const where: WhereOptions<Role> = {};
 
       if (filter.search) {
-        where[Op.or] = [
+        (where as any)[Op.or] = [
           { name: { [Op.like]: `%${filter.search}%` } },
           { description: { [Op.like]: `%${filter.search}%` } }
         ];

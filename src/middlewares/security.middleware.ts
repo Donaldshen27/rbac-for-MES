@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { AppError } from '@utils/errors';
-import { ErrorCode } from '@types/index';
+import { ErrorCode } from '../types';
 
 /**
  * Security headers middleware using Helmet

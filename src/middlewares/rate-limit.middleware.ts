@@ -1,7 +1,7 @@
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { Request, Response } from 'express';
 import { ResponseUtil } from '@utils/response';
-import { ErrorCode } from '@types/index';
+import { ErrorCode } from '../types';
 import appConfig from '@config/app.config';
 
 /**

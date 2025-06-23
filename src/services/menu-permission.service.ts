@@ -53,8 +53,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'CREATE_MENU',
-          entityType: 'Menu',
-          entityId: menu.id,
+          resource: 'menu',
+          resourceId: menu.id,
           details: { menuData },
           ipAddress: null,
           userAgent: null
@@ -160,8 +160,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'UPDATE_MENU',
-          entityType: 'Menu',
-          entityId: menuId,
+          resource: 'menu',
+          resourceId: menuId,
           details: { changes },
           ipAddress: null,
           userAgent: null
@@ -227,8 +227,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'DELETE_MENU',
-          entityType: 'Menu',
-          entityId: menuId,
+          resource: 'menu',
+          resourceId: menuId,
           details: { menuTitle: menu.title },
           ipAddress: null,
           userAgent: null
@@ -277,8 +277,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'REORDER_MENUS',
-          entityType: 'Menu',
-          entityId: 'multiple',
+          resource: 'menu',
+          resourceId: 'multiple',
           details: { reorderedCount: reorderData.length },
           ipAddress: null,
           userAgent: null
@@ -338,8 +338,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'MOVE_MENU',
-          entityType: 'Menu',
-          entityId: menuId,
+          resource: 'menu',
+          resourceId: menuId,
           details: { 
             oldParentId,
             newParentId,
@@ -444,7 +444,7 @@ export class MenuPermissionService {
             ...menu.toJSON(),
             children: [],
             permissions: menuPermissionMap.get(menuId)
-          } as MenuNode);
+          } as unknown as MenuNode);
         }
       }
 
@@ -502,7 +502,7 @@ export class MenuPermissionService {
       }
 
       if (filter.search) {
-        where[Op.or] = [
+        (where as any)[Op.or] = [
           { title: { [Op.like]: `%${filter.search}%` } },
           { href: { [Op.like]: `%${filter.search}%` } }
         ];
@@ -527,7 +527,7 @@ export class MenuPermissionService {
         menuMap.set(menu.id, {
           ...menu.toJSON(),
           children: []
-        } as MenuNode);
+        } as unknown as MenuNode);
       }
 
       // Second pass: build tree
@@ -680,8 +680,8 @@ export class MenuPermissionService {
             await AuditService.log({
               userId,
               action: 'UPDATE_MENU_PERMISSION',
-              entityType: 'MenuPermission',
-              entityId: `${roleId}:${permission.menuId}`,
+              resource: 'menu_permission',
+              resourceId: `${roleId}:${permission.menuId}`,
               details: { roleId, menuId: permission.menuId, changes },
               ipAddress: null,
               userAgent: null
@@ -793,8 +793,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'BATCH_UPDATE_MENU_PERMISSIONS',
-          entityType: 'MenuPermission',
-          entityId: roleId,
+          resource: 'menu_permission',
+          resourceId: roleId,
           details: { 
             roleId, 
             updatedMenus: success.length, 
@@ -1032,8 +1032,8 @@ export class MenuPermissionService {
         await AuditService.log({
           userId,
           action: 'REMOVE_ALL_MENU_PERMISSIONS',
-          entityType: 'Role',
-          entityId: roleId,
+          resource: 'role',
+          resourceId: roleId,
           details: { roleId, deletedCount },
           ipAddress: null,
           userAgent: null

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { JWTUtil, JWTPayload } from '../utils/jwt.util';
-import { AppError } from '../utils/errors';
+import { AppError, AuthenticationError, AuthorizationError } from '../utils/errors';
+import { ErrorCode } from '../types';
 import { User } from '../models';
 import { RefreshToken } from '../models';
 
@@ -19,6 +20,12 @@ export interface AuthUser {
   roles: string[];
   permissions: string[];
   isSuperuser: boolean;
+  firstName?: string;
+  lastName?: string;
+  isActive: boolean;
+  lastLogin?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const authenticate = async (
@@ -30,33 +37,38 @@ export const authenticate = async (
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      throw new AppError('No authorization header provided', 401, 'AUTH_001');
+      throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'No authorization header provided');
     }
 
     const [type, token] = authHeader.split(' ');
 
     if (type !== 'Bearer' || !token) {
-      throw new AppError('Invalid authorization format', 401, 'AUTH_001');
+      throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Invalid authorization format');
     }
 
     const payload = JWTUtil.verifyAccessToken(token);
 
-    // Optionally verify user still exists and is active
-    const user = await User.findByPk(payload.sub, {
-      attributes: ['id', 'isActive', 'isSuperuser']
-    });
+    // Fetch full user object
+    const user = await User.findByPk(payload.sub);
 
     if (!user || !user.isActive) {
-      throw new AppError('User not found or inactive', 401, 'AUTH_005');
+      throw new AuthenticationError(ErrorCode.AUTH_ACCOUNT_DISABLED, 'User not found or inactive');
     }
 
+    // Create AuthUser object
     req.user = {
-      id: payload.sub,
-      username: payload.username,
-      email: payload.email,
+      id: user.id,
+      username: user.username,
+      email: user.email,
       roles: payload.roles,
       permissions: payload.permissions,
-      isSuperuser: user.isSuperuser
+      isSuperuser: user.isSuperuser,
+      firstName: user.firstName || undefined,
+      lastName: user.lastName || undefined,
+      isActive: user.isActive,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
     };
 
     next();
@@ -85,18 +97,22 @@ export const optionalAuthenticate = async (
 
     try {
       const payload = JWTUtil.verifyAccessToken(token);
-      const user = await User.findByPk(payload.sub, {
-        attributes: ['id', 'isActive', 'isSuperuser']
-      });
+      const user = await User.findByPk(payload.sub);
 
       if (user && user.isActive) {
         req.user = {
-          id: payload.sub,
-          username: payload.username,
-          email: payload.email,
+          id: user.id,
+          username: user.username,
+          email: user.email,
           roles: payload.roles,
           permissions: payload.permissions,
-          isSuperuser: user.isSuperuser
+          isSuperuser: user.isSuperuser,
+          firstName: user.firstName || undefined,
+          lastName: user.lastName || undefined,
+          isActive: user.isActive,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
         };
       }
     } catch (error) {
@@ -114,7 +130,7 @@ export const requireRole = (roles: string | string[]) => {
 
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return next(new AppError('Authentication required', 401, 'AUTH_001'));
+      return next(new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Authentication required'));
     }
 
     if (req.user.isSuperuser) {
@@ -124,7 +140,7 @@ export const requireRole = (roles: string | string[]) => {
     const hasRole = requiredRoles.some(role => req.user!.roles.includes(role));
 
     if (!hasRole) {
-      return next(new AppError('Insufficient permissions', 403, 'AUTH_004'));
+      return next(new AuthorizationError('Insufficient role permissions'));
     }
 
     next();
@@ -136,7 +152,7 @@ export const requirePermission = (permissions: string | string[]) => {
 
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return next(new AppError('Authentication required', 401, 'AUTH_001'));
+      return next(new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Authentication required'));
     }
 
     if (req.user.isSuperuser) {
@@ -155,7 +171,7 @@ export const requirePermission = (permissions: string | string[]) => {
     });
 
     if (!hasPermission) {
-      return next(new AppError('Insufficient permissions', 403, 'AUTH_004'));
+      return next(new AuthorizationError('Insufficient permissions'));
     }
 
     next();
@@ -164,11 +180,11 @@ export const requirePermission = (permissions: string | string[]) => {
 
 export const requireSuperuser = (req: Request, res: Response, next: NextFunction): void => {
   if (!req.user) {
-    return next(new AppError('Authentication required', 401, 'AUTH_001'));
+    return next(new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Authentication required'));
   }
 
   if (!req.user.isSuperuser) {
-    return next(new AppError('Superuser access required', 403, 'AUTH_004'));
+    return next(new AuthorizationError('Superuser access required'));
   }
 
   next();
@@ -183,7 +199,7 @@ export const refreshTokenMiddleware = async (
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      throw new AppError('Refresh token required', 400, 'AUTH_001');
+      throw new AppError(ErrorCode.VALIDATION_REQUIRED_FIELD, 'Refresh token required', 400);
     }
 
     const payload = JWTUtil.verifyRefreshToken(refreshToken);
@@ -197,13 +213,13 @@ export const refreshTokenMiddleware = async (
     });
 
     if (!storedToken) {
-      throw new AppError('Invalid refresh token', 401, 'AUTH_003');
+      throw new AuthenticationError(ErrorCode.AUTH_TOKEN_INVALID, 'Invalid refresh token');
     }
 
     // Check if token is expired
     if (new Date() > storedToken.expiresAt) {
       await storedToken.destroy();
-      throw new AppError('Refresh token expired', 401, 'AUTH_002');
+      throw new AuthenticationError(ErrorCode.AUTH_TOKEN_EXPIRED, 'Refresh token expired');
     }
 
     req.user = {
@@ -212,7 +228,10 @@ export const refreshTokenMiddleware = async (
       email: '',
       roles: [],
       permissions: [],
-      isSuperuser: false
+      isSuperuser: false,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     next();

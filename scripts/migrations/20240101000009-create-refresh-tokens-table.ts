@@ -29,6 +29,16 @@ export default {
         allowNull: false,
         field: 'expires_at'
       },
+      ipAddress: {
+        type: DataTypes.STRING(45), // Supports IPv6
+        allowNull: true,
+        field: 'ip_address'
+      },
+      userAgent: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'user_agent'
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
