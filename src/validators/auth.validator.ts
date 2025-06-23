@@ -4,22 +4,40 @@ import { commonPatterns } from '@middlewares/validation.middleware';
 /**
  * Login validation schema
  */
-export const loginSchema = Joi.object({
-  username: Joi.string()
-    .required()
-    .trim()
-    .min(3)
-    .max(100)
-    .messages({
-      'string.empty': 'Username or email is required',
-      'any.required': 'Username or email is required',
-    }),
-  password: Joi.string()
-    .required()
-    .messages({
-      'string.empty': 'Password is required',
-      'any.required': 'Password is required',
-    }),
+export const loginSchema = Joi.alternatives().try(
+  Joi.object({
+    username: Joi.string()
+      .required()
+      .trim()
+      .min(3)
+      .max(100)
+      .messages({
+        'string.empty': 'Username is required',
+        'any.required': 'Username is required',
+      }),
+    password: Joi.string()
+      .required()
+      .messages({
+        'string.empty': 'Password is required',
+        'any.required': 'Password is required',
+      }),
+  }),
+  Joi.object({
+    email: commonPatterns.email
+      .required()
+      .messages({
+        'string.empty': 'Email is required',
+        'any.required': 'Email is required',
+      }),
+    password: Joi.string()
+      .required()
+      .messages({
+        'string.empty': 'Password is required',
+        'any.required': 'Password is required',
+      }),
+  })
+).messages({
+  'alternatives.match': 'Either username or email must be provided'
 });
 
 /**
@@ -91,13 +109,6 @@ export const changePasswordSchema = Joi.object({
     .messages({
       'any.required': 'New password is required',
       'any.invalid': 'New password must be different from current password',
-    }),
-  confirmPassword: Joi.string()
-    .required()
-    .valid(Joi.ref('newPassword'))
-    .messages({
-      'any.required': 'Password confirmation is required',
-      'any.only': 'Passwords do not match',
     }),
 });
 

@@ -65,6 +65,8 @@ export class Role extends Model<
       as: 'users',
       foreignKey: 'roleId',
       otherKey: 'userId',
+      sourceKey: 'id',
+      targetKey: 'id',
     });
 
     Role.belongsToMany(models.Permission, {
@@ -127,8 +129,12 @@ Role.init(
       allowNull: false,
       comment: 'System roles cannot be deleted',
     },
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+    },
   },
   {
     sequelize,

@@ -51,6 +51,7 @@
   "homepage": "https://github.com/Donaldshen27/rbac-for-MES#readme",
   "dependencies": {
     "@types/swagger-jsdoc": "^6.0.4",
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.0",
     "cors": "^2.8.5",

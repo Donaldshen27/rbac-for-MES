@@ -96,7 +96,15 @@ export const validateMultiple = (validations: {
 export const commonPatterns = {
   uuid: Joi.string().uuid({ version: 'uuidv4' }),
   email: Joi.string().email().lowercase().trim(),
-  username: Joi.string().alphanum().min(3).max(30).lowercase().trim(),
+  username: Joi.string()
+    .pattern(/^[a-zA-Z0-9_-]+$/)
+    .min(3)
+    .max(30)
+    .lowercase()
+    .trim()
+    .messages({
+      'string.pattern.base': 'Username can only contain letters, numbers, underscores, and hyphens'
+    }),
   password: Joi.string().min(8).max(128),
   strongPassword: Joi.string()
     .min(8)

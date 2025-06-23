@@ -24,7 +24,7 @@ const config: DatabaseConfig = {
     },
     define: {
       timestamps: true,
-      underscored: false,
+      underscored: true,
       freezeTableName: true,
       charset: 'utf8mb4',
       collate: 'utf8mb4_unicode_ci',
@@ -46,7 +46,7 @@ const config: DatabaseConfig = {
     },
     define: {
       timestamps: true,
-      underscored: false,
+      underscored: true,
       freezeTableName: true,
       charset: 'utf8mb4',
       collate: 'utf8mb4_unicode_ci',
@@ -68,7 +68,7 @@ const config: DatabaseConfig = {
     },
     define: {
       timestamps: true,
-      underscored: false,
+      underscored: true,
       freezeTableName: true,
       charset: 'utf8mb4',
       collate: 'utf8mb4_unicode_ci',

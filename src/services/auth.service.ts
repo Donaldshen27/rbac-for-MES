@@ -5,10 +5,17 @@ import { Role } from '../models/Role';
 import { AuthUtil } from '../utils/auth.util';
 import { BcryptUtil } from '../utils/bcrypt.util';
 import { JWTUtil } from '../utils/jwt.util';
-import { ApiError } from '../utils/api-error';
 import { logger } from '../utils/logger';
 import { LoginCredentials, RegisterData, TokenPair, TokenPayload } from '../types/auth.types';
 import { AuditLog } from '../models/AuditLog';
+import { 
+  AuthenticationError, 
+  ConflictError, 
+  ValidationError, 
+  NotFoundError,
+  AppError 
+} from '../utils/errors';
+import { ErrorCode } from '../types';
 
 export class AuthService {
   /**
@@ -23,7 +30,7 @@ export class AuthService {
       });
 
       if (existingUser) {
-        throw new ApiError(409, 'User with this email already exists');
+        throw new ConflictError('User with this email already exists', ErrorCode.USER_EMAIL_EXISTS);
       }
 
       // Check if username is taken
@@ -34,7 +41,7 @@ export class AuthService {
         });
 
         if (existingUsername) {
-          throw new ApiError(409, 'Username is already taken');
+          throw new ConflictError('Username is already taken', ErrorCode.USER_ALREADY_EXISTS);
         }
       }
 
@@ -59,7 +66,7 @@ export class AuthService {
         });
 
         if (roles.length !== data.roleIds.length) {
-          throw new ApiError(400, 'One or more role IDs are invalid');
+          throw new ValidationError('One or more role IDs are invalid');
         }
 
         await user.setRoles(roles);
@@ -107,10 +114,14 @@ export class AuthService {
   static async login(credentials: LoginCredentials, transaction?: Transaction): Promise<{ user: User; tokens: TokenPair }> {
     try {
       // Find user by email or username
-      const user = await User.findOne({
-        where: credentials.username.includes('@') 
+      const whereClause = credentials.email 
+        ? { email: credentials.email }
+        : credentials.username?.includes('@')
           ? { email: credentials.username }
-          : { username: credentials.username },
+          : { username: credentials.username };
+          
+      const user = await User.findOne({
+        where: whereClause,
         include: [
           {
             model: Role,
@@ -123,12 +134,12 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new ApiError(401, 'Invalid credentials');
+        throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Invalid credentials');
       }
 
       // Check if user is active
       if (!user.isActive) {
-        throw new ApiError(403, 'Account is inactive');
+        throw new AuthenticationError(ErrorCode.AUTH_ACCOUNT_DISABLED, 'Account is inactive');
       }
 
       // Verify password
@@ -138,7 +149,7 @@ export class AuthService {
         // we'll just log the failed attempt without tracking count
         logger.warn(`Failed login attempt for user: ${user.email}`);
 
-        throw new ApiError(401, 'Invalid credentials');
+        throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Invalid credentials');
       }
 
       // Update last login time
@@ -154,7 +165,7 @@ export class AuthService {
         resource: 'User',
         resourceId: user.id,
         details: {
-          loginMethod: credentials.username.includes('@') ? 'email' : 'username'
+          loginMethod: credentials.email ? 'email' : 'username'
         },
         ipAddress: credentials.ipAddress,
         userAgent: credentials.userAgent
@@ -201,18 +212,18 @@ export class AuthService {
       });
 
       if (!storedToken) {
-        throw new ApiError(401, 'Invalid refresh token');
+        throw new AuthenticationError(ErrorCode.AUTH_TOKEN_INVALID, 'Invalid refresh token');
       }
 
       // Check if token is expired
       if (new Date() > storedToken.expiresAt) {
         await storedToken.destroy({ transaction });
-        throw new ApiError(401, 'Refresh token has expired');
+        throw new AuthenticationError(ErrorCode.AUTH_TOKEN_EXPIRED, 'Refresh token has expired');
       }
 
       // Check if user is active
       if (!storedToken.user || !storedToken.user.isActive) {
-        throw new ApiError(403, 'Account is inactive');
+        throw new AuthenticationError(ErrorCode.AUTH_ACCOUNT_DISABLED, 'Account is inactive');
       }
 
       // Revoke old refresh token
@@ -274,13 +285,13 @@ export class AuthService {
       const user = await User.findByPk(userId, { transaction });
       
       if (!user) {
-        throw new ApiError(404, 'User not found');
+        throw new NotFoundError('User');
       }
 
       // Verify current password
       const isPasswordValid = await BcryptUtil.comparePassword(currentPassword, user.password);
       if (!isPasswordValid) {
-        throw new ApiError(401, 'Current password is incorrect');
+        throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Current password is incorrect');
       }
 
       // Hash new password
@@ -368,7 +379,7 @@ export class AuthService {
     try {
       // Since resetPasswordToken fields don't exist in the User model,
       // this functionality needs to be implemented with a separate model
-      throw new ApiError(501, 'Password reset functionality needs to be implemented with a separate PasswordReset model');
+      throw new AppError(ErrorCode.INTERNAL_SERVER_ERROR, 'Password reset functionality needs to be implemented with a separate PasswordReset model', 501);
 
       // Hash new password
       const hashedPassword = await BcryptUtil.hashPassword(newPassword);
@@ -407,12 +418,12 @@ export class AuthService {
       const user = await User.findByPk(userId, { transaction });
       
       if (!user) {
-        throw new ApiError(404, 'User not found');
+        throw new NotFoundError('User');
       }
 
       // Since emailVerified fields don't exist in the model,
       // this functionality needs to be implemented differently
-      throw new ApiError(501, 'Email verification functionality needs to be implemented with proper fields in the User model');
+      throw new AppError(ErrorCode.INTERNAL_SERVER_ERROR, 'Email verification functionality needs to be implemented with proper fields in the User model', 501);
 
       // Log email verification
       await AuditLog.create({
@@ -457,7 +468,7 @@ export class AuthService {
       });
 
       if (!token) {
-        throw new ApiError(404, 'Session not found');
+        throw new NotFoundError('Session');
       }
 
       await token.destroy({ transaction });

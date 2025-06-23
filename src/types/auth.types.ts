@@ -1,7 +1,8 @@
 import { Request } from 'express';
 
 export interface LoginCredentials {
-  username: string; // Can be email or username
+  username?: string;
+  email?: string;
   password: string;
   ipAddress?: string;
   userAgent?: string;

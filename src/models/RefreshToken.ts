@@ -118,7 +118,9 @@ RefreshToken.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    createdAt: DataTypes.DATE,
+    createdAt: {
+      type: DataTypes.DATE,
+    },
   },
   {
     sequelize,

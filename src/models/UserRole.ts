@@ -37,16 +37,19 @@ export class UserRole extends Model<
     UserRole.belongsTo(models.User, {
       as: 'user',
       foreignKey: 'userId',
+      targetKey: 'id',
     });
 
     UserRole.belongsTo(models.Role, {
       as: 'role',
       foreignKey: 'roleId',
+      targetKey: 'id',
     });
 
     UserRole.belongsTo(models.User, {
       as: 'assigner',
       foreignKey: 'assignedBy',
+      targetKey: 'id',
     });
   }
 }

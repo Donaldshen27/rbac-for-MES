@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ApiResponse } from '../utils/response';
-import { ApiError } from '../utils/api-error';
+import { ValidationError, AppError } from '../utils/errors';
+import { ErrorCode } from '../types';
 import { logger } from '../utils/logger';
 
 export class AuthController {
@@ -89,13 +90,13 @@ export class AuthController {
       const { refreshToken } = req.body;
 
       if (!refreshToken) {
-        throw new ApiError(400, 'Refresh token is required');
+        throw new ValidationError('Refresh token is required');
       }
 
       const tokens = await AuthService.refreshToken(refreshToken);
 
       res.json(
-        ApiResponse.success({ tokens }, 'Token refreshed successfully')
+        ApiResponse.success(tokens, 'Token refreshed successfully')
       );
     } catch (error) {
       next(error);
@@ -286,7 +287,7 @@ export class AuthController {
   static async resendVerification(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // This would typically generate and send a new verification email
-      throw new ApiError(501, 'Email verification not implemented');
+      throw new AppError(ErrorCode.INTERNAL_SERVER_ERROR, 'Email verification not implemented', 501);
     } catch (error) {
       next(error);
     }
@@ -308,7 +309,7 @@ export class AuthController {
         ipAddress: session.ipAddress,
         createdAt: session.createdAt,
         expiresAt: session.expiresAt,
-        isCurrent: session.token === req.body.currentRefreshToken
+        isCurrent: false // TODO: Need a way to identify current session without body in GET request
       }));
 
       res.json(

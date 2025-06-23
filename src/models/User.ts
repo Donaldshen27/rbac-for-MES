@@ -85,16 +85,20 @@ export class User extends Model<
       as: 'roles',
       foreignKey: 'userId',
       otherKey: 'roleId',
+      sourceKey: 'id',
+      targetKey: 'id',
     });
 
     User.hasMany(models.RefreshToken, {
       as: 'refreshTokens',
       foreignKey: 'userId',
+      sourceKey: 'id',
     });
 
     User.hasMany(models.AuditLog, {
       as: 'auditLogs',
       foreignKey: 'userId',
+      sourceKey: 'id',
     });
   }
 }
@@ -153,8 +157,12 @@ User.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+    },
   },
   {
     sequelize,
