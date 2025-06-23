@@ -1,0 +1,765 @@
+{
+  "info": {
+    "name": "RBAC System API",
+    "description": "Role-Based Access Control System API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('jwt_token', response.token);",
+                  "    pm.test('Login successful', () => {",
+                  "        pm.response.to.have.status(200);",
+                  "        pm.expect(response).to.have.property('token');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Version",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/version",
+              "host": ["{{base_url}}"],
+              "path": ["version"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menus",
+      "item": [
+        {
+          "name": "List All Menus",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/menus",
+              "host": ["{{base_url}}"],
+              "path": ["menus"]
+            }
+          }
+        },
+        {
+          "name": "Create Menu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Dashboard\",\n    \"path\": \"/dashboard\",\n    \"icon\": \"dashboard\",\n    \"order\": 1,\n    \"parentId\": null,\n    \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/menus",
+              "host": ["{{base_url}}"],
+              "path": ["menus"]
+            }
+          }
+        },
+        {
+          "name": "Get Menu by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/menus/:id",
+              "host": ["{{base_url}}"],
+              "path": ["menus", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Menu",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Dashboard\",\n    \"path\": \"/dashboard\",\n    \"icon\": \"dashboard-new\",\n    \"order\": 1,\n    \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/menus/:id",
+              "host": ["{{base_url}}"],
+              "path": ["menus", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Menu",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/menus/:id",
+              "host": ["{{base_url}}"],
+              "path": ["menus", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Move Menu",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"parentId\": 2,\n    \"order\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/menus/:id/move",
+              "host": ["{{base_url}}"],
+              "path": ["menus", ":id", "move"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Menu Permissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/menus/:id/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["menus", ":id", "permissions"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Menu Permissions",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"permissionIds\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/menus/:id/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["menus", ":id", "permissions"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reorder Menus",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orders\": [\n        {\"id\": 1, \"order\": 2},\n        {\"id\": 2, \"order\": 1},\n        {\"id\": 3, \"order\": 3}\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/menus/reorder",
+              "host": ["{{base_url}}"],
+              "path": ["menus", "reorder"]
+            }
+          }
+        },
+        {
+          "name": "Get Menu Tree",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/menus/tree",
+              "host": ["{{base_url}}"],
+              "path": ["menus", "tree"]
+            }
+          }
+        },
+        {
+          "name": "Get User Menu",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/menus/user",
+              "host": ["{{base_url}}"],
+              "path": ["menus", "user"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permissions",
+      "item": [
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["permissions"]
+            }
+          }
+        },
+        {
+          "name": "Create Permission",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"users.create\",\n    \"description\": \"Create new users\",\n    \"category\": \"Users\",\n    \"action\": \"create\",\n    \"resource\": \"users\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["permissions"]
+            }
+          }
+        },
+        {
+          "name": "Get Permission by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/permissions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["permissions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Permission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"users.create\",\n    \"description\": \"Create new users with enhanced permissions\",\n    \"category\": \"Users\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["permissions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Permission",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/permissions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["permissions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check User Permission",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/permissions/check?permission=users.create",
+              "host": ["{{base_url}}"],
+              "path": ["permissions", "check"],
+              "query": [
+                {
+                  "key": "permission",
+                  "value": "users.create"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resources",
+      "item": [
+        {
+          "name": "List Resources",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resources",
+              "host": ["{{base_url}}"],
+              "path": ["resources"]
+            }
+          }
+        },
+        {
+          "name": "Create Resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"User Management\",\n    \"type\": \"module\",\n    \"identifier\": \"user-management\",\n    \"description\": \"Module for managing users\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/resources",
+              "host": ["{{base_url}}"],
+              "path": ["resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Resource by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resources/:id",
+              "host": ["{{base_url}}"],
+              "path": ["resources", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Resource",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"User Management System\",\n    \"description\": \"Enhanced module for managing users\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/resources/:id",
+              "host": ["{{base_url}}"],
+              "path": ["resources", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Resource",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/resources/:id",
+              "host": ["{{base_url}}"],
+              "path": ["resources", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": ["{{base_url}}"],
+              "path": ["roles"]
+            }
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Manager\",\n    \"description\": \"Manager role with team permissions\",\n    \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": ["{{base_url}}"],
+              "path": ["roles"]
+            }
+          }
+        },
+        {
+          "name": "Get Role by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Senior Manager\",\n    \"description\": \"Senior manager role with extended permissions\",\n    \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Clone Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Junior Manager\",\n    \"description\": \"Junior manager role based on Manager\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId/clone",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId", "clone"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Role Permissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId", "permissions"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Role Permissions",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"permissionIds\": [1, 2, 3, 4, 5]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId", "permissions"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Role Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roles/:roleId/users",
+              "host": ["{{base_url}}"],
+              "path": ["roles", ":roleId", "users"],
+              "variable": [
+                {
+                  "key": "roleId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bulk Delete Roles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"roleIds\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/bulk-delete",
+              "host": ["{{base_url}}"],
+              "path": ["roles", "bulk-delete"]
+            }
+          }
+        },
+        {
+          "name": "Get Role Hierarchy",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roles/hierarchy",
+              "host": ["{{base_url}}"],
+              "path": ["roles", "hierarchy"]
+            }
+          }
+        },
+        {
+          "name": "Get Role Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roles/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["roles", "statistics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
