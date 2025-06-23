@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { config } from '../config';
 
 export class BcryptUtil {

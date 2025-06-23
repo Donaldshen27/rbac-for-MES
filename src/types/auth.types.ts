@@ -1,88 +1,74 @@
-import { Request } from 'express';
-
-// Authentication types
-export interface LoginRequest {
-  username: string; // Can be username or email
+export interface LoginCredentials {
+  username: string; // Can be email or username
   password: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
-export interface RegisterRequest {
-  username: string;
+export interface RegisterData {
   email: string;
   password: string;
+  username?: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
+  roleIds?: number[];
+  ipAddress?: string;
+  userAgent?: string;
 }
 
-export interface AuthTokens {
+export interface TokenPair {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
-  tokenType: string;
 }
 
-export interface JwtPayload {
-  sub: string; // user id
-  username: string;
+export interface TokenPayload {
+  userId: number;
   email: string;
   roles: string[];
-  permissions: string[];
-  isSuperuser: boolean;
   iat?: number;
   exp?: number;
 }
 
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-export interface ForgotPasswordRequest {
+export interface PasswordResetRequest {
   email: string;
 }
 
-// Extended Express Request with auth
-export interface AuthenticatedRequest extends Request {
-  user?: JwtPayload;
-  userId?: string;
+export interface PasswordResetData {
+  token: string;
+  newPassword: string;
 }
 
-// Auth response types
-export interface LoginResponse {
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface SessionInfo {
+  id: string;
+  userId: number;
+  userAgent?: string;
+  ipAddress?: string;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+export interface AuthResponse {
   user: {
-    id: string;
-    username: string;
+    id: number;
     email: string;
-    firstName: string | null;
-    lastName: string | null;
+    username: string;
+    firstName?: string;
+    lastName?: string;
     roles: Array<{
-      id: string;
+      id: number;
       name: string;
-      description: string | null;
+      description?: string;
     }>;
+    emailVerified: boolean;
+    status: string;
+    lastLoginAt?: Date;
   };
-  tokens: AuthTokens;
-}
-
-export interface RegisterResponse {
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    firstName: string | null;
-    lastName: string | null;
-    isActive: boolean;
-    createdAt: Date;
-  };
+  tokens: TokenPair;
 }
