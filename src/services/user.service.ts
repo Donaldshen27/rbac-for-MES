@@ -159,14 +159,11 @@ export class UserService {
         throw new ApiError(409, 'Username is already taken');
       }
 
-      // Hash password
-      const hashedPassword = await BcryptUtil.hashPassword(data.password);
-
-      // Create user
+      // Create user (password will be hashed by the model's beforeCreate hook)
       const user = await User.create({
         email: data.email,
         username: data.username,
-        password: hashedPassword,
+        password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
         isActive: data.isActive !== undefined ? data.isActive : true,

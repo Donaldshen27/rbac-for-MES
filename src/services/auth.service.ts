@@ -45,14 +45,11 @@ export class AuthService {
         }
       }
 
-      // Hash password
-      const hashedPassword = await BcryptUtil.hashPassword(data.password);
-
-      // Create user
+      // Create user (password will be hashed by the model's beforeCreate hook)
       const user = await User.create({
         email: data.email,
         username: data.username || data.email.split('@')[0],
-        password: hashedPassword,
+        password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
         isActive: true
@@ -294,12 +291,9 @@ export class AuthService {
         throw new AuthenticationError(ErrorCode.AUTH_INVALID_CREDENTIALS, 'Current password is incorrect');
       }
 
-      // Hash new password
-      const hashedPassword = await BcryptUtil.hashPassword(newPassword);
-
-      // Update password
+      // Update password (will be hashed by the model's beforeUpdate hook)
       await user.update({ 
-        password: hashedPassword
+        password: newPassword
       }, { transaction });
 
       // Revoke all refresh tokens (force re-login)
