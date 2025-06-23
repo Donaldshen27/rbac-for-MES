@@ -49,3 +49,15 @@ export {
   createDynamicLimiter,
   createRateLimiter
 } from './rate-limit.middleware';
+
+// Validation
+export {
+  validate,
+  validateMultiple,
+  ValidationTarget,
+  commonPatterns,
+  createPaginationSchema,
+  createSearchSchema,
+  extendedJoi,
+  sanitizeHtml
+} from './validation.middleware';
