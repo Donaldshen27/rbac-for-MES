@@ -20,12 +20,16 @@
     "typecheck": "tsc --noEmit",
     "db:init": "ts-node scripts/init-db.ts",
     "db:test": "ts-node scripts/test-connection.ts",
-    "migrate": "sequelize-cli db:migrate",
-    "migrate:undo": "sequelize-cli db:migrate:undo",
-    "migrate:create": "sequelize-cli migration:generate --name",
-    "seed": "sequelize-cli db:seed:all",
-    "seed:undo": "sequelize-cli db:seed:undo:all",
-    "db:reset": "ts-node scripts/reset-db.ts"
+    "db:setup": "ts-node scripts/setup-database.ts",
+    "migrate:up": "ts-node scripts/run-migrations.ts up",
+    "migrate:down": "ts-node scripts/run-migrations.ts down",
+    "migrate:reset": "ts-node scripts/run-migrations.ts reset",
+    "migrate:status": "ts-node scripts/run-migrations.ts status",
+    "seed:up": "ts-node scripts/run-seeders.ts up",
+    "seed:down": "ts-node scripts/run-seeders.ts down",
+    "seed:reset": "ts-node scripts/run-seeders.ts reset",
+    "seed:status": "ts-node scripts/run-seeders.ts status",
+    "db:reset": "npm run migrate:reset && npm run migrate:up && npm run seed:up"
   },
   "repository": {
     "type": "git",
@@ -59,6 +63,7 @@
     "mysql2": "^3.14.1",
     "sequelize": "^6.37.7",
     "swagger-ui-express": "^5.0.1",
+    "umzug": "^3.8.2",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "yamljs": "^0.3.0"
