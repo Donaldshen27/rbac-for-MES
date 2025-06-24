@@ -5,6 +5,7 @@ import { ApiError } from '../utils/api-error';
 import { logger } from '../utils/logger';
 import { PaginationOptions } from '../types/user.types';
 import { RoleFilter, RolePermissionUpdate, RoleCloneData } from '../types/role.types';
+import { getValidatedQuery } from '../middlewares/validation.middleware';
 
 export class RoleController {
   /**
@@ -13,17 +14,18 @@ export class RoleController {
    */
   static async getAllRoles(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const query = getValidatedQuery(req);
       const filter: RoleFilter = {
-        search: req.query.search as string,
-        isSystem: req.query.isSystem !== undefined ? req.query.isSystem === 'true' : undefined,
-        hasUsers: req.query.hasUsers !== undefined ? req.query.hasUsers === 'true' : undefined,
-        sortBy: req.query.sortBy as any,
-        sortOrder: req.query.sortOrder as any
+        search: query.search as string,
+        isSystem: query.isSystem !== undefined ? query.isSystem === 'true' : undefined,
+        hasUsers: query.hasUsers !== undefined ? query.hasUsers === 'true' : undefined,
+        sortBy: query.sortBy as any,
+        sortOrder: query.sortOrder as any
       };
 
       const pagination: PaginationOptions = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10
+        page: parseInt(query.page as string) || 1,
+        limit: parseInt(query.limit as string) || 10
       };
 
       const result = await RoleService.getAllRoles(filter, pagination);

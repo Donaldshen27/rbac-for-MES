@@ -11,6 +11,7 @@ import {
   CreateMenuData,
   UpdateMenuData
 } from '../types/menu.types';
+import { getValidatedQuery } from '../middlewares/validation.middleware';
 
 export class MenuController {
   /**
@@ -145,12 +146,13 @@ export class MenuController {
    */
   static async getCompleteMenuTree(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const query = getValidatedQuery(req);
       const filter: MenuFilter = {
-        search: req.query.search as string,
-        parentId: req.query.parentId as string || undefined,
-        isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
-        sortBy: req.query.sortBy as any,
-        sortOrder: req.query.sortOrder as any
+        search: query.search as string,
+        parentId: query.parentId as string || undefined,
+        isActive: query.isActive !== undefined ? query.isActive === 'true' : undefined,
+        sortBy: query.sortBy as any,
+        sortOrder: query.sortOrder as any
       };
 
       const menus = await MenuPermissionService.getCompleteMenuTree(filter);

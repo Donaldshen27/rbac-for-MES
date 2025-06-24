@@ -10,11 +10,18 @@ import {
   auditPermissionCheck
 } from '../../../src/middlewares/permission.middleware';
 import permissionService from '../../../src/services/permission.service';
-import logger from '../../../src/utils/logger';
+import { logger } from '../../../src/utils/logger';
 import { ApiError } from '../../../src/utils/ApiError';
 
 jest.mock('../../../src/services/permission.service');
-jest.mock('../../../src/utils/logger');
+jest.mock('../../../src/utils/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn()
+  }
+}));
 
 describe('Permission Middleware', () => {
   let mockReq: Partial<Request>;
@@ -32,7 +39,10 @@ describe('Permission Middleware', () => {
         email: 'test@example.com',
         roles: ['user'],
         permissions: ['user:read', 'user:update'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       }
     };
     mockRes = {};

@@ -3,6 +3,7 @@ import permissionService from '@services/permission.service';
 import { ResponseUtil } from '@utils/response';
 import { logger } from '@utils/logger';
 import { AuthRequest } from '../types/express';
+import { getValidatedQuery } from '../middlewares/validation.middleware';
 
 interface IAuthRequest extends Request {
   user?: any;
@@ -22,7 +23,7 @@ export class PermissionController {
 
   async getPermissions(req: Request, res: Response): Promise<void> {
     try {
-      const result = await permissionService.getPermissions(req.query as any);
+      const result = await permissionService.getPermissions(getValidatedQuery(req) as any);
 
       ResponseUtil.success(res, result, 'Permissions retrieved successfully');
     } catch (error: any) {
@@ -69,7 +70,7 @@ export class PermissionController {
 
   async checkPermission(req: IAuthRequest, res: Response): Promise<void> {
     try {
-      const { permission } = req.query;
+      const { permission } = getValidatedQuery(req);
       const userId = req.user!.id;
 
       const result = await permissionService.checkUserPermission(

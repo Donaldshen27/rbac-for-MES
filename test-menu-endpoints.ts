@@ -1,14 +1,14 @@
 import axios, { AxiosInstance } from 'axios';
 
 // Test configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:3000/api/v1';
 let apiClient: AxiosInstance;
 let authToken: string;
 
 // Test data
 const testUser = {
-  email: 'admin@example.com',
-  password: 'Admin123!'
+  email: 'admin@rbac-system.com',
+  password: 'Admin@123'
 };
 
 const testRole = {
@@ -251,10 +251,12 @@ async function runTests() {
     testRoleId = role.id;
 
     // Test updating role menu permissions
-    await testUpdateRoleMenuPermissions(testRoleId);
+    if (testRoleId) {
+      await testUpdateRoleMenuPermissions(testRoleId);
 
-    // Test batch update
-    await testBatchUpdateMenuPermissions(testRoleId);
+      // Test batch update
+      await testBatchUpdateMenuPermissions(testRoleId);
+    }
 
     // Test menu access check
     await testCheckMenuAccess('M1');
@@ -267,7 +269,9 @@ async function runTests() {
     await testGetMenuStatistics();
 
     // Test removing all permissions
-    await testRemoveAllRoleMenuPermissions(testRoleId);
+    if (testRoleId) {
+      await testRemoveAllRoleMenuPermissions(testRoleId);
+    }
 
     console.log('\n✅ All tests completed successfully!');
   } catch (error) {

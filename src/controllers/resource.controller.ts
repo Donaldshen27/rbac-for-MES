@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import permissionService from '@services/permission.service';
 import { ResponseUtil } from '@utils/response';
 import { logger } from '@utils/logger';
+import { getValidatedQuery } from '../middlewares/validation.middleware';
 
 export class ResourceController {
   async createResource(req: Request, res: Response): Promise<void> {
@@ -17,7 +18,7 @@ export class ResourceController {
 
   async getResources(req: Request, res: Response): Promise<void> {
     try {
-      const result = await permissionService.getResources(req.query as any);
+      const result = await permissionService.getResources(getValidatedQuery(req) as any);
 
       ResponseUtil.success(res, result, 'Resources retrieved successfully');
     } catch (error: any) {

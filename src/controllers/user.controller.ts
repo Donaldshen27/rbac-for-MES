@@ -13,6 +13,7 @@ import {
 } from '../types/user.types';
 import { logger } from '../utils/logger';
 import { sequelize } from '../config/database';
+import { getValidatedQuery } from '../middlewares/validation.middleware';
 
 export class UserController {
   /**
@@ -21,7 +22,7 @@ export class UserController {
    */
   static async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1, limit = 10, search, isActive, roleIds, sortBy, sortOrder } = req.query;
+      const { page = 1, limit = 10, search, isActive, roleIds, sortBy, sortOrder } = getValidatedQuery(req);
 
       const filter: UserFilter = {
         search: search as string,
@@ -307,7 +308,7 @@ export class UserController {
    */
   static async exportUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { format = 'json', ...filterParams } = req.query;
+      const { format = 'json', ...filterParams } = getValidatedQuery(req);
 
       const filter: UserFilter = {
         search: filterParams.search as string,

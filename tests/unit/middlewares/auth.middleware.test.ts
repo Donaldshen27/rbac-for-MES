@@ -65,7 +65,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: ['user'],
         permissions: ['read'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date)
       });
       expect(mockNext).toHaveBeenCalledWith();
     });
@@ -217,7 +220,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: ['admin', 'user'],
         permissions: [],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requireRole('admin');
@@ -233,7 +239,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: [],
         permissions: [],
-        isSuperuser: true
+        isSuperuser: true,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requireRole('admin');
@@ -249,7 +258,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: ['user'],
         permissions: [],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requireRole('admin');
@@ -271,7 +283,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: ['editor'],
         permissions: [],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requireRole(['admin', 'editor']);
@@ -302,7 +317,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: [],
         permissions: ['user:create', 'user:read'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requirePermission('user:create');
@@ -318,7 +336,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: [],
         permissions: ['user:*'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requirePermission('user:create');
@@ -334,7 +355,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: [],
         permissions: [],
-        isSuperuser: true
+        isSuperuser: true,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requirePermission('user:create');
@@ -350,7 +374,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: [],
         permissions: ['user:read'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requirePermission('user:create');
@@ -372,7 +399,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: [],
         permissions: ['user:update'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       const middleware = requirePermission(['user:create', 'user:update']);
@@ -390,7 +420,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: ['admin'],
         permissions: [],
-        isSuperuser: true
+        isSuperuser: true,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       requireSuperuser(mockReq as Request, mockRes as Response, mockNext);
@@ -405,7 +438,10 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         roles: ['admin'],
         permissions: ['*'],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       requireSuperuser(mockReq as Request, mockRes as Response, mockNext);
@@ -464,7 +500,10 @@ describe('Auth Middleware', () => {
         email: '',
         roles: [],
         permissions: [],
-        isSuperuser: false
+        isSuperuser: false,
+        isActive: true,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date)
       });
       expect(mockNext).toHaveBeenCalledWith();
     });

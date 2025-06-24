@@ -9,29 +9,69 @@ async function setupTestData() {
     await sequelize.authenticate();
     console.log('Connected to database');
 
-    // Create or find Resources
-    const [usersResource] = await Resource.findOrCreate({
-      where: { name: 'users' },
-      defaults: {
-        name: 'users',
-        description: 'User management module'
+    // Check if we already have data
+    const existingAdmin = await User.findOne({ where: { username: 'admin' } });
+    const roleCount = await Role.count();
+    
+    if (roleCount > 0) {
+      console.log('Test data already exists. Checking admin role assignment...');
+      
+      // Just ensure admin has the Administrator role
+      const adminRole = await Role.findOne({ where: { name: 'Administrator' } });
+      if (adminRole && existingAdmin) {
+        const hasRole = await existingAdmin.hasRole(adminRole);
+        if (!hasRole) {
+          await existingAdmin.addRole(adminRole);
+          console.log('✓ Assigned Administrator role to admin user');
+        } else {
+          console.log('✓ Admin user already has Administrator role');
+        }
       }
-    });
-      Resource.create({
-        name: 'roles',
-        description: 'Role management module'
+      
+      console.log('\nTest data is ready!');
+      console.log('\nTest Users:');
+      console.log('1. admin/admin123 - Administrator role');
+      
+      await sequelize.close();
+      return;
+    }
+
+    // Create or find Resources
+    const resources = await Promise.all([
+      Resource.findOrCreate({
+        where: { name: 'users' },
+        defaults: {
+          name: 'users',
+          description: 'User management module'
+        }
       }),
-      Resource.create({
-        name: 'permissions',
-        description: 'Permission management module'
+      Resource.findOrCreate({
+        where: { name: 'roles' },
+        defaults: {
+          name: 'roles',
+          description: 'Role management module'
+        }
       }),
-      Resource.create({
-        name: 'menus',
-        description: 'Menu management module'
+      Resource.findOrCreate({
+        where: { name: 'permissions' },
+        defaults: {
+          name: 'permissions',
+          description: 'Permission management module'
+        }
       }),
-      Resource.create({
-        name: 'resources',
-        description: 'Resource management module'
+      Resource.findOrCreate({
+        where: { name: 'menus' },
+        defaults: {
+          name: 'menus',
+          description: 'Menu management module'
+        }
+      }),
+      Resource.findOrCreate({
+        where: { name: 'resources' },
+        defaults: {
+          name: 'resources',
+          description: 'Resource management module'
+        }
       })
     ]);
     console.log('✓ Created resources');
@@ -198,7 +238,7 @@ async function setupTestData() {
     });
 
     const permissionsMenu = await Menu.create({
-      id: 'permissions',
+      id: 'perms',
       title: 'Permissions',
       href: '/admin/permissions',
       icon: 'key',

@@ -49,7 +49,13 @@ export const validate = (
     }
 
     // Replace the original data with the validated and transformed data
-    req[target] = value;
+    // In Express 5, req.query is read-only, so we need to handle it differently
+    if (target === ValidationTarget.QUERY) {
+      // Store validated query parameters in a custom property
+      (req as any).validatedQuery = value;
+    } else {
+      req[target] = value;
+    }
     next();
   };
 };
@@ -77,7 +83,12 @@ export const validateMultiple = (validations: {
           });
         } else {
           // Replace with validated data
-          (req as any)[target] = value;
+          // In Express 5, req.query is read-only, so we need to handle it differently
+          if (target === ValidationTarget.QUERY) {
+            (req as any).validatedQuery = value;
+          } else {
+            (req as any)[target] = value;
+          }
         }
       }
     });
@@ -190,3 +201,16 @@ export const extendedJoi = Joi.extend({
  * Validate request - alias for validateMultiple for backward compatibility
  */
 export const validateRequest = validateMultiple;
+
+/**
+ * Helper function to get query parameters (handles Express 5 compatibility)
+ * Use this in controllers after query validation middleware
+ */
+export const getValidatedQuery = (req: Request): any => {
+  // If query was validated, use the validated version
+  if ((req as any).validatedQuery !== undefined) {
+    return (req as any).validatedQuery;
+  }
+  // Otherwise return the original query
+  return req.query;
+};

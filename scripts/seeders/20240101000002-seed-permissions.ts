@@ -28,8 +28,10 @@ export default {
       { name: 'permission:*', resource: 'permission', action: '*', description: '权限管理所有权限' },
       
       // Menu permissions
+      { name: 'menu:create', resource: 'menu', action: 'create', description: '创建菜单' },
       { name: 'menu:read', resource: 'menu', action: 'read', description: '查看菜单' },
       { name: 'menu:update', resource: 'menu', action: 'update', description: '更新菜单' },
+      { name: 'menu:delete', resource: 'menu', action: 'delete', description: '删除菜单' },
       { name: 'menu:*', resource: 'menu', action: '*', description: '菜单管理所有权限' },
       
       // Production permissions

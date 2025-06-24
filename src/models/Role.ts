@@ -20,6 +20,7 @@ export class Role extends Model<
   declare name: string;
   declare description: string | null;
   declare isSystem: CreationOptional<boolean>;
+  declare isActive: CreationOptional<boolean>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -128,6 +129,11 @@ Role.init(
       defaultValue: false,
       allowNull: false,
       comment: 'System roles cannot be deleted',
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: false,
     },
     createdAt: {
       type: DataTypes.DATE,

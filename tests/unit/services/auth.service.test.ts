@@ -234,7 +234,7 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should logout user by revoking specific token', async () => {
-      const userId = 1;
+      const userId = '1';
       const refreshToken = 'refresh-token';
 
       (AuthUtil.revokeRefreshToken as jest.Mock).mockResolvedValue(undefined);
@@ -253,7 +253,7 @@ describe('AuthService', () => {
     });
 
     it('should logout user by revoking all tokens', async () => {
-      const userId = 1;
+      const userId = '1';
 
       (AuthUtil.revokeAllUserTokens as jest.Mock).mockResolvedValue(undefined);
       (AuditLog.create as jest.Mock).mockResolvedValue({});

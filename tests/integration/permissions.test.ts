@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app } from '../../src/app';
+import app from '../../src/app';
 import { sequelize } from '../../src/config/database';
 import { User } from '../../src/models/User';
 import { Role } from '../../src/models/Role';

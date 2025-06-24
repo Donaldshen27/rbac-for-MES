@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app } from '../../src/app';
+import app from '../../src/app';
 import { sequelize } from '../../src/config/database';
 import { User } from '../../src/models/User';
 import { Role } from '../../src/models/Role';
@@ -360,10 +360,10 @@ describe('Menus API', () => {
   });
 
   describe('Menu Tree and Hierarchy', () => {
-    describe('GET /menus/tree', () => {
+    describe('GET /menus', () => {
       it('should get menu tree structure', async () => {
         const response = await request(app)
-          .get(`${baseUrl}/menus/tree`)
+          .get(`${baseUrl}/menus`)
           .set('Authorization', `Bearer ${adminToken}`);
 
         expect(response.status).toBe(200);
@@ -510,10 +510,10 @@ describe('Menus API', () => {
     });
   });
 
-  describe('GET /menus/user', () => {
+  describe('GET /menus/user-menu', () => {
     it('should get user-specific menu based on permissions', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/menus/user`)
+        .get(`${baseUrl}/menus/user-menu`)
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
@@ -526,7 +526,7 @@ describe('Menus API', () => {
 
     it('should get all menus for admin', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/menus/user`)
+        .get(`${baseUrl}/menus/user-menu`)
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(response.status).toBe(200);

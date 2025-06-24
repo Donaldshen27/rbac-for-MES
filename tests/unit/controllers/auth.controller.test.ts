@@ -171,7 +171,17 @@ describe('AuthController', () => {
       const userId = '1';
       const refreshToken = 'refresh-token';
 
-      req.user = { id: userId } as any;
+      req.user = { 
+        id: userId,
+        username: 'testuser',
+        email: 'test@example.com',
+        roles: ['user'],
+        permissions: [],
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
+      } as any;
       req.body = { refreshToken };
       (AuthService.logout as jest.Mock).mockResolvedValue(undefined);
       (ApiResponse.success as jest.Mock).mockReturnValue({ success: true });
@@ -187,7 +197,17 @@ describe('AuthController', () => {
     it('should logout from all devices successfully', async () => {
       const userId = '1';
 
-      req.user = { id: userId } as any;
+      req.user = { 
+        id: userId,
+        username: 'testuser',
+        email: 'test@example.com',
+        roles: ['user'],
+        permissions: [],
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
+      } as any;
       (AuthService.logout as jest.Mock).mockResolvedValue(undefined);
       (ApiResponse.success as jest.Mock).mockReturnValue({ success: true });
 
@@ -267,7 +287,17 @@ describe('AuthController', () => {
         newPassword: 'NewPass123!'
       };
 
-      req.user = { id: userId } as any;
+      req.user = { 
+        id: userId,
+        username: 'testuser',
+        email: 'test@example.com',
+        roles: ['user'],
+        permissions: [],
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
+      } as any;
       req.body = passwordData;
       (AuthService.changePassword as jest.Mock).mockResolvedValue(undefined);
       (ApiResponse.success as jest.Mock).mockReturnValue({ success: true });
@@ -297,7 +327,17 @@ describe('AuthController', () => {
         }
       ];
 
-      req.user = { id: userId } as any;
+      req.user = { 
+        id: userId,
+        username: 'testuser',
+        email: 'test@example.com',
+        roles: ['user'],
+        permissions: [],
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
+      } as any;
       req.body = { currentRefreshToken: 'token-1' };
       (AuthService.getActiveSessions as jest.Mock).mockResolvedValue(mockSessions);
       (ApiResponse.success as jest.Mock).mockReturnValue({ success: true });
@@ -314,7 +354,17 @@ describe('AuthController', () => {
       const userId = '1';
       const sessionId = 'session-1';
 
-      req.user = { id: userId } as any;
+      req.user = { 
+        id: userId,
+        username: 'testuser',
+        email: 'test@example.com',
+        roles: ['user'],
+        permissions: [],
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
+      } as any;
       req.params = { sessionId };
       (AuthService.revokeSession as jest.Mock).mockResolvedValue(undefined);
       (ApiResponse.success as jest.Mock).mockReturnValue({ success: true });
@@ -331,7 +381,13 @@ describe('AuthController', () => {
       const mockUser = {
         id: '1',
         email: 'test@example.com',
-        roles: [{ id: 1, name: 'user' }]
+        username: 'testuser',
+        roles: [{ id: 1, name: 'user' }],
+        permissions: [],
+        isSuperuser: false,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01')
       };
 
       req.user = mockUser as any;

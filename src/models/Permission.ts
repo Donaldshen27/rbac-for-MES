@@ -19,6 +19,7 @@ export class Permission extends Model<
   declare resource: string;
   declare action: string;
   declare description: string | null;
+  declare category: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -115,6 +116,10 @@ Permission.init(
     },
     description: {
       type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    category: {
+      type: DataTypes.STRING(50),
       allowNull: true,
     },
     createdAt: DataTypes.DATE,
