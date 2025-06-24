@@ -43,6 +43,9 @@ test_endpoint() {
     
     echo -e "\n${YELLOW}Testing: $description${NC}"
     
+    # Add delay to avoid rate limiting
+    sleep 0.5
+    
     local curl_cmd="curl -s -w \"%{http_code}\" -o /tmp/api_response.json"
     
     if [ ! -z "$token" ]; then
@@ -151,28 +154,41 @@ echo -e "\n${BLUE}=== Testing Health Endpoints (No Auth) ===${NC}"
 test_endpoint "GET" "/health" "Health Check" "" "" "200"
 test_endpoint "GET" "/version" "API Version" "" "" "200"
 
+# Add small delay between test groups to avoid rate limiting
+sleep 0.5
+
 # Test Menu Endpoints
 echo -e "\n${BLUE}=== Testing Menu Endpoints ===${NC}"
 
 # Admin tests
 echo -e "\n${YELLOW}--- Admin User Tests ---${NC}"
 test_endpoint "GET" "/menus" "List All Menus (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "POST" "/menus" "Create Menu (Admin)" '{"name":"Test Menu","path":"/test","icon":"test","order":10,"isActive":true}' "$ADMIN_TOKEN" "201"
-MENU_ID=$(extract_id)
-test_endpoint "GET" "/menus/$MENU_ID" "Get Menu by ID (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "PUT" "/menus/$MENU_ID" "Update Menu (Admin)" '{"name":"Updated Test Menu","path":"/test-updated","icon":"test-new","order":10,"isActive":true}' "$ADMIN_TOKEN" "200"
-test_endpoint "GET" "/menus/tree" "Get Menu Tree (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "GET" "/menus/user" "Get User Menu (Admin)" "" "$ADMIN_TOKEN" "200"
+# Use timestamp to create unique ID
+TIMESTAMP=$(date +%s)
+test_endpoint "POST" "/menus" "Create Menu (Admin)" '{"id":"test'$TIMESTAMP'","title":"Test Menu","href":"/test","icon":"test","orderIndex":10,"isActive":true}' "$ADMIN_TOKEN" "201"
+if [ $? -eq 0 ]; then
+    MENU_ID=$(extract_id)
+    test_endpoint "GET" "/menus/$MENU_ID" "Get Menu by ID (Admin)" "" "$ADMIN_TOKEN" "200"
+    test_endpoint "PUT" "/menus/$MENU_ID" "Update Menu (Admin)" '{"title":"Updated Test Menu","href":"/test-updated","icon":"test-new","orderIndex":10,"isActive":true}' "$ADMIN_TOKEN" "200"
+else
+    MENU_ID=""
+    echo "Skipping menu update tests due to creation failure"
+fi
+test_endpoint "GET" "/menus" "Get Menu Tree (Admin)" "" "$ADMIN_TOKEN" "200"
+test_endpoint "GET" "/menus/user-menu" "Get User Menu (Admin)" "" "$ADMIN_TOKEN" "200"
 
 # Manager tests
 echo -e "\n${YELLOW}--- Manager User Tests ---${NC}"
 test_endpoint "GET" "/menus" "List All Menus (Manager)" "" "$MANAGER_TOKEN" "200"
-test_endpoint "POST" "/menus" "Create Menu (Manager - Should Fail)" '{"name":"Manager Menu","path":"/manager","icon":"manager","order":20,"isActive":true}' "$MANAGER_TOKEN" "403"
+test_endpoint "POST" "/menus" "Create Menu (Manager - Should Fail)" '{"id":"managermenu","title":"Manager Menu","href":"/manager","icon":"manager","orderIndex":20,"isActive":true}' "$MANAGER_TOKEN" "403"
 
 # Viewer tests
 echo -e "\n${YELLOW}--- Viewer User Tests ---${NC}"
 test_endpoint "GET" "/menus" "List All Menus (Viewer)" "" "$VIEWER_TOKEN" "200"
-test_endpoint "POST" "/menus" "Create Menu (Viewer - Should Fail)" '{"name":"Viewer Menu","path":"/viewer","icon":"viewer","order":30,"isActive":true}' "$VIEWER_TOKEN" "403"
+test_endpoint "POST" "/menus" "Create Menu (Viewer - Should Fail)" '{"id":"viewermenu","title":"Viewer Menu","href":"/viewer","icon":"viewer","orderIndex":30,"isActive":true}' "$VIEWER_TOKEN" "403"
+
+# Add small delay between test groups to avoid rate limiting
+sleep 0.5
 
 # Test Permission Endpoints
 echo -e "\n${BLUE}=== Testing Permission Endpoints ===${NC}"
@@ -180,21 +196,29 @@ echo -e "\n${BLUE}=== Testing Permission Endpoints ===${NC}"
 # Admin tests
 echo -e "\n${YELLOW}--- Admin User Tests ---${NC}"
 test_endpoint "GET" "/permissions" "List Permissions (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "POST" "/permissions" "Create Permission (Admin)" '{"name":"test:read","description":"Test Read Permission","category":"Test","action":"read","resource":"test"}' "$ADMIN_TOKEN" "201"
-PERM_ID=$(extract_id)
-test_endpoint "GET" "/permissions/$PERM_ID" "Get Permission by ID (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "PUT" "/permissions/$PERM_ID" "Update Permission (Admin)" '{"name":"test:read","description":"Updated Test Permission","category":"Test"}' "$ADMIN_TOKEN" "200"
+test_endpoint "POST" "/permissions" "Create Permission (Admin)" '{"name":"test'$TIMESTAMP':read","description":"Test Read Permission","action":"read","resource":"test'$TIMESTAMP'"}' "$ADMIN_TOKEN" "201"
+if [ $? -eq 0 ]; then
+    PERM_ID=$(extract_id)
+    test_endpoint "GET" "/permissions/$PERM_ID" "Get Permission by ID (Admin)" "" "$ADMIN_TOKEN" "200"
+    test_endpoint "PUT" "/permissions/$PERM_ID" "Update Permission (Admin)" '{"description":"Updated Test Permission"}' "$ADMIN_TOKEN" "200"
+else
+    PERM_ID=""
+    echo "Skipping permission update tests due to creation failure"
+fi
 test_endpoint "GET" "/permissions/check?permission=users:read" "Check User Permission (Admin)" "" "$ADMIN_TOKEN" "200"
 
 # Manager tests
 echo -e "\n${YELLOW}--- Manager User Tests ---${NC}"
 test_endpoint "GET" "/permissions" "List Permissions (Manager)" "" "$MANAGER_TOKEN" "200"
-test_endpoint "POST" "/permissions" "Create Permission (Manager - Should Fail)" '{"name":"manager:test","description":"Manager Test","category":"Test","action":"test","resource":"manager"}' "$MANAGER_TOKEN" "403"
+test_endpoint "POST" "/permissions" "Create Permission (Manager - Should Fail)" '{"name":"manager:test","description":"Manager Test","action":"test","resource":"manager"}' "$MANAGER_TOKEN" "403"
 
 # Viewer tests
 echo -e "\n${YELLOW}--- Viewer User Tests ---${NC}"
 test_endpoint "GET" "/permissions" "List Permissions (Viewer)" "" "$VIEWER_TOKEN" "200"
 test_endpoint "GET" "/permissions/check?permission=users:read" "Check User Permission (Viewer)" "" "$VIEWER_TOKEN" "200"
+
+# Add small delay between test groups to avoid rate limiting
+sleep 0.5
 
 # Test Resource Endpoints
 echo -e "\n${BLUE}=== Testing Resource Endpoints ===${NC}"
@@ -202,10 +226,15 @@ echo -e "\n${BLUE}=== Testing Resource Endpoints ===${NC}"
 # Admin tests
 echo -e "\n${YELLOW}--- Admin User Tests ---${NC}"
 test_endpoint "GET" "/resources" "List Resources (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "POST" "/resources" "Create Resource (Admin)" '{"name":"Test Resource","type":"module","identifier":"test-resource","description":"Test Resource Description"}' "$ADMIN_TOKEN" "201"
-RES_ID=$(extract_id)
-test_endpoint "GET" "/resources/$RES_ID" "Get Resource by ID (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "PUT" "/resources/$RES_ID" "Update Resource (Admin)" '{"name":"Updated Test Resource","description":"Updated Description"}' "$ADMIN_TOKEN" "200"
+test_endpoint "POST" "/resources" "Create Resource (Admin)" '{"name":"test-resource-'$TIMESTAMP'","description":"Test Resource Description"}' "$ADMIN_TOKEN" "201"
+if [ $? -eq 0 ]; then
+    RES_ID=$(extract_id)
+    test_endpoint "GET" "/resources/$RES_ID" "Get Resource by ID (Admin)" "" "$ADMIN_TOKEN" "200"
+    test_endpoint "PUT" "/resources/$RES_ID" "Update Resource (Admin)" '{"description":"Updated Description"}' "$ADMIN_TOKEN" "200"
+else
+    RES_ID=""
+    echo "Skipping resource update tests due to creation failure"
+fi
 
 # Manager tests
 echo -e "\n${YELLOW}--- Manager User Tests ---${NC}"
@@ -215,20 +244,23 @@ test_endpoint "GET" "/resources" "List Resources (Manager - Should Fail)" "" "$M
 echo -e "\n${YELLOW}--- Viewer User Tests ---${NC}"
 test_endpoint "GET" "/resources" "List Resources (Viewer)" "" "$VIEWER_TOKEN" "200"
 
+# Add small delay between test groups to avoid rate limiting
+sleep 0.5
+
 # Test Role Endpoints
 echo -e "\n${BLUE}=== Testing Role Endpoints ===${NC}"
 
 # Admin tests
 echo -e "\n${YELLOW}--- Admin User Tests ---${NC}"
 test_endpoint "GET" "/roles" "List Roles (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "POST" "/roles" "Create Role (Admin)" '{"name":"Test Role","description":"Test Role Description","isActive":true}' "$ADMIN_TOKEN" "201"
+test_endpoint "POST" "/roles" "Create Role (Admin)" '{"name":"Test-Role","description":"Test Role Description"}' "$ADMIN_TOKEN" "201"
 ROLE_ID=$(extract_id)
 test_endpoint "GET" "/roles/$ROLE_ID" "Get Role by ID (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "PUT" "/roles/$ROLE_ID" "Update Role (Admin)" '{"name":"Updated Test Role","description":"Updated Description","isActive":true}' "$ADMIN_TOKEN" "200"
+test_endpoint "PUT" "/roles/$ROLE_ID" "Update Role (Admin)" '{"name":"Updated-Test-Role","description":"Updated Description"}' "$ADMIN_TOKEN" "200"
 test_endpoint "GET" "/roles/$ROLE_ID/permissions" "Get Role Permissions (Admin)" "" "$ADMIN_TOKEN" "200"
 test_endpoint "PUT" "/roles/$ROLE_ID/permissions" "Update Role Permissions (Admin)" '{"permissionIds":["'$PERM_ID'"]}' "$ADMIN_TOKEN" "200"
 test_endpoint "GET" "/roles/$ROLE_ID/users" "Get Role Users (Admin)" "" "$ADMIN_TOKEN" "200"
-test_endpoint "POST" "/roles/$ROLE_ID/clone" "Clone Role (Admin)" '{"name":"Cloned Test Role","description":"Cloned from Test Role"}' "$ADMIN_TOKEN" "201"
+test_endpoint "POST" "/roles/$ROLE_ID/clone" "Clone Role (Admin)" '{"name":"Cloned-Test-Role","description":"Cloned from Test Role"}' "$ADMIN_TOKEN" "201"
 CLONED_ROLE_ID=$(extract_id)
 test_endpoint "GET" "/roles/hierarchy" "Get Role Hierarchy (Admin)" "" "$ADMIN_TOKEN" "200"
 test_endpoint "GET" "/roles/statistics" "Get Role Statistics (Admin)" "" "$ADMIN_TOKEN" "200"
@@ -236,15 +268,18 @@ test_endpoint "GET" "/roles/statistics" "Get Role Statistics (Admin)" "" "$ADMIN
 # Manager tests
 echo -e "\n${YELLOW}--- Manager User Tests ---${NC}"
 test_endpoint "GET" "/roles" "List Roles (Manager)" "" "$MANAGER_TOKEN" "200"
-test_endpoint "POST" "/roles" "Create Role (Manager)" '{"name":"Manager Test Role","description":"Created by Manager","isActive":true}' "$MANAGER_TOKEN" "201"
+test_endpoint "POST" "/roles" "Create Role (Manager)" '{"name":"Manager-Test-Role","description":"Created by Manager"}' "$MANAGER_TOKEN" "201"
 MANAGER_ROLE_ID=$(extract_id)
 test_endpoint "GET" "/roles/$MANAGER_ROLE_ID" "Get Role by ID (Manager)" "" "$MANAGER_TOKEN" "200"
-test_endpoint "PUT" "/roles/$MANAGER_ROLE_ID" "Update Role (Manager)" '{"name":"Updated Manager Role","description":"Updated by Manager","isActive":true}' "$MANAGER_TOKEN" "200"
+test_endpoint "PUT" "/roles/$MANAGER_ROLE_ID" "Update Role (Manager)" '{"name":"Updated-Manager-Role","description":"Updated by Manager"}' "$MANAGER_TOKEN" "200"
 
 # Viewer tests
 echo -e "\n${YELLOW}--- Viewer User Tests ---${NC}"
 test_endpoint "GET" "/roles" "List Roles (Viewer)" "" "$VIEWER_TOKEN" "200"
-test_endpoint "POST" "/roles" "Create Role (Viewer - Should Fail)" '{"name":"Viewer Role","description":"Viewer Test","isActive":true}' "$VIEWER_TOKEN" "403"
+test_endpoint "POST" "/roles" "Create Role (Viewer - Should Fail)" '{"name":"Viewer-Role","description":"Viewer Test"}' "$VIEWER_TOKEN" "403"
+
+# Add small delay between test groups to avoid rate limiting
+sleep 0.5
 
 # Test User Endpoints (if implemented)
 echo -e "\n${BLUE}=== Testing User Endpoints ===${NC}"
@@ -271,6 +306,9 @@ test_endpoint "POST" "/users" "Create User (Manager)" '{"username":"manageruser"
 echo -e "\n${YELLOW}--- Viewer User Tests ---${NC}"
 test_endpoint "GET" "/users" "List Users (Viewer)" "" "$VIEWER_TOKEN"
 test_endpoint "POST" "/users" "Create User (Viewer - Should Fail)" '{"username":"vieweruser","email":"vieweruser@example.com","password":"vieweruser123","firstName":"Viewer","lastName":"User","isActive":true}' "$VIEWER_TOKEN" "403"
+
+# Add small delay between test groups to avoid rate limiting
+sleep 0.5
 
 # Test Complex Scenarios
 echo -e "\n${BLUE}=== Testing Complex Scenarios ===${NC}"

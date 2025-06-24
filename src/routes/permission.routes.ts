@@ -19,14 +19,14 @@ router.use(authenticate);
 // Permission routes
 router.post(
   '/',
-  requirePermission('permission:create'),
+  requirePermission('permissions:create'),
   validateRequest({ body: createPermissionSchema }),
   permissionController.createPermission
 );
 
 router.get(
   '/',
-  requirePermission('permission:read'),
+  requirePermission('permissions:read'),
   validateRequest({ query: listPermissionsSchema }),
   permissionController.getPermissions
 );
@@ -39,21 +39,21 @@ router.get(
 
 router.get(
   '/:id',
-  requirePermission('permission:read'),
+  requirePermission('permissions:read'),
   validateRequest({ params: validateId }),
   permissionController.getPermissionById
 );
 
 router.put(
   '/:id',
-  requirePermission('permission:update'),
+  requirePermission('permissions:update'),
   validateRequest({ params: validateId, body: updatePermissionSchema }),
   permissionController.updatePermission
 );
 
 router.delete(
   '/:id',
-  requirePermission('permission:delete'),
+  requirePermission('permissions:delete'),
   validateRequest({ params: validateId }),
   permissionController.deletePermission
 );

@@ -23,40 +23,40 @@ const router = Router();
 router.use(authenticate);
 
 // Role statistics and hierarchy (read-only operations)
-router.get('/statistics', requirePermission('role:read'), RoleController.getRoleStatistics);
-router.get('/hierarchy', requirePermission('role:read'), RoleController.getRoleHierarchy);
+router.get('/statistics', requirePermission('roles:read'), RoleController.getRoleStatistics);
+router.get('/hierarchy', requirePermission('roles:read'), RoleController.getRoleHierarchy);
 
 // Bulk operations
 router.post('/bulk-delete', 
-  requirePermission('role:delete'), 
+  requirePermission('roles:delete'), 
   validate(bulkDeleteRolesSchema), 
   RoleController.bulkDeleteRoles
 );
 
 // List and search roles
 router.get('/', 
-  requirePermission('role:read'), 
+  requirePermission('roles:read'), 
   validate(listRolesSchema, ValidationTarget.QUERY), 
   RoleController.getAllRoles
 );
 
 // Create new role
 router.post('/', 
-  requirePermission('role:create'), 
+  requirePermission('roles:create'), 
   validate(createRoleSchema), 
   RoleController.createRole
 );
 
 // Get role by ID
 router.get('/:roleId', 
-  requirePermission('role:read'), 
+  requirePermission('roles:read'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   RoleController.getRoleById
 );
 
 // Update role
 router.put('/:roleId', 
-  requirePermission('role:update'), 
+  requirePermission('roles:update'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   validate(updateRoleSchema), 
   RoleController.updateRole
@@ -64,14 +64,14 @@ router.put('/:roleId',
 
 // Delete role
 router.delete('/:roleId', 
-  requirePermission('role:delete'), 
+  requirePermission('roles:delete'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   RoleController.deleteRole
 );
 
 // Clone role
 router.post('/:roleId/clone', 
-  requirePermission('role:create'), 
+  requirePermission('roles:create'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   validate(cloneRoleSchema), 
   RoleController.cloneRole
@@ -79,20 +79,20 @@ router.post('/:roleId/clone',
 
 // Permission management
 router.get('/:roleId/permissions',
-  requirePermission('role:read'),
+  requirePermission('roles:read'),
   validate(roleIdSchema, ValidationTarget.PARAMS),
   permissionController.getRolePermissions
 );
 
 router.patch('/:roleId/permissions', 
-  requirePermission('role:update'), 
+  requirePermission('roles:update'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   validate(updateRolePermissionsSchema), 
   RoleController.updateRolePermissions
 );
 
 router.put('/:roleId/permissions',
-  requirePermission('role:update'),
+  requirePermission('roles:update'),
   validate(roleIdSchema, ValidationTarget.PARAMS),
   validate(updateRolePermissionsSchema),
   permissionController.updateRolePermissions
@@ -100,27 +100,27 @@ router.put('/:roleId/permissions',
 
 // Check if role has permission
 router.get('/:roleId/has-permission/:permissionName', 
-  requirePermission('role:read'), 
+  requirePermission('roles:read'), 
   validate(checkPermissionParamsSchema, ValidationTarget.PARAMS), 
   RoleController.checkRolePermission
 );
 
 // User assignment management
 router.get('/:roleId/users', 
-  requirePermission('role:read'), 
+  requirePermission('roles:read'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   RoleController.getRoleUsers
 );
 
 router.post('/:roleId/users', 
-  requirePermission('role:update'), 
+  requirePermission('roles:update'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   validate(userRoleOperationSchema), 
   RoleController.assignUsersToRole
 );
 
 router.delete('/:roleId/users', 
-  requirePermission('role:update'), 
+  requirePermission('roles:update'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   validate(userRoleOperationSchema), 
   RoleController.removeUsersFromRole
@@ -128,14 +128,14 @@ router.delete('/:roleId/users',
 
 // Menu permissions management
 router.put('/:roleId/menu-permissions', 
-  requirePermission('menu:update'), 
+  requirePermission('menus:update'), 
   validate(roleIdSchema, ValidationTarget.PARAMS), 
   validate(updateMenuPermissionsSchema), 
   MenuController.updateRoleMenuPermissions
 );
 
 router.delete('/:roleId/menu-permissions',
-  requirePermission('menu:update'),
+  requirePermission('menus:update'),
   validate(roleIdSchema, ValidationTarget.PARAMS),
   MenuController.removeAllRoleMenuPermissions
 );

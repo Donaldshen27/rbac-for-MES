@@ -7,7 +7,7 @@ let authToken: string;
 
 // Test data
 const testUser = {
-  email: 'admin@rbac-system.com',
+  username: 'superadmin',
   password: 'Admin@123'
 };
 

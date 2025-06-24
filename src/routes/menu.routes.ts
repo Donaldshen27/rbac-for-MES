@@ -22,42 +22,42 @@ router.use(authenticate);
 router.get('/user-menu', MenuController.getUserMenuTree);
 
 // Menu statistics
-router.get('/statistics', requirePermission('menu:read'), MenuController.getMenuTreeStatistics);
+router.get('/statistics', requirePermission('menus:read'), MenuController.getMenuTreeStatistics);
 
 // Permission matrix
-router.get('/permissions/matrix', requirePermission('menu:read'), MenuController.getMenuPermissionMatrix);
+router.get('/permissions/matrix', requirePermission('menus:read'), MenuController.getMenuPermissionMatrix);
 
 // Reorder menus
 router.put('/reorder',
-  requirePermission('menu:update'),
+  requirePermission('menus:update'),
   validate(reorderMenusSchema),
   MenuController.reorderMenus
 );
 
 // Complete menu tree (admin only)
 router.get('/', 
-  requirePermission('menu:read'), 
+  requirePermission('menus:read'), 
   validate(listMenusSchema, ValidationTarget.QUERY),
   MenuController.getCompleteMenuTree
 );
 
 // Create new menu
 router.post('/',
-  requirePermission('menu:create'),
+  requirePermission('menus:create'),
   validate(createMenuSchema),
   MenuController.createMenu
 );
 
 // Get single menu by ID
 router.get('/:menuId',
-  requirePermission('menu:read'),
+  requirePermission('menus:read'),
   validate(menuIdSchema, ValidationTarget.PARAMS),
   MenuController.getMenuById
 );
 
 // Update menu
 router.put('/:menuId',
-  requirePermission('menu:update'),
+  requirePermission('menus:update'),
   validate(menuIdSchema, ValidationTarget.PARAMS),
   validate(updateMenuSchema),
   MenuController.updateMenu
@@ -65,14 +65,14 @@ router.put('/:menuId',
 
 // Delete menu
 router.delete('/:menuId',
-  requirePermission('menu:delete'),
+  requirePermission('menus:delete'),
   validate(menuIdSchema, ValidationTarget.PARAMS),
   MenuController.deleteMenu
 );
 
 // Move menu to different parent
 router.put('/:menuId/move',
-  requirePermission('menu:update'),
+  requirePermission('menus:update'),
   validate(menuIdSchema, ValidationTarget.PARAMS),
   validate(moveMenuSchema),
   MenuController.moveMenu
@@ -80,21 +80,21 @@ router.put('/:menuId/move',
 
 // Get permissions for a specific menu
 router.get('/:menuId/permissions', 
-  requirePermission('menu:read'), 
+  requirePermission('menus:read'), 
   validate(menuIdSchema, ValidationTarget.PARAMS), 
   MenuController.getMenuPermissions
 );
 
 // Batch update menu permissions
 router.post('/permissions/batch', 
-  requirePermission('menu:update'), 
+  requirePermission('menus:update'), 
   validate(batchMenuPermissionSchema), 
   MenuController.batchUpdateMenuPermissions
 );
 
 // Check menu access
 router.post('/check-access', 
-  requirePermission('menu:read'), 
+  requirePermission('menus:read'), 
   validate(checkMenuAccessSchema), 
   MenuController.checkMenuAccess
 );

@@ -18,35 +18,35 @@ router.use(authenticate);
 // Resource routes
 router.post(
   '/',
-  requirePermission('resource:create'),
+  requirePermission('resources:create'),
   validateRequest({ body: createResourceSchema }),
   resourceController.createResource
 );
 
 router.get(
   '/',
-  requirePermission('resource:read'),
+  requirePermission('resources:read'),
   validateRequest({ query: listResourcesSchema }),
   resourceController.getResources
 );
 
 router.get(
   '/:id',
-  requirePermission('resource:read'),
+  requirePermission('resources:read'),
   validateRequest({ params: validateId }),
   resourceController.getResourceById
 );
 
 router.put(
   '/:id',
-  requirePermission('resource:update'),
+  requirePermission('resources:update'),
   validateRequest({ params: validateId, body: updateResourceSchema }),
   resourceController.updateResource
 );
 
 router.delete(
   '/:id',
-  requirePermission('resource:delete'),
+  requirePermission('resources:delete'),
   validateRequest({ params: validateId }),
   resourceController.deleteResource
 );
